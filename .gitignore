@@ -1,0 +1,29 @@
+# Entornos virtuales
+venv/
+env/
+ENV/
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caché de pruebas (pytest)
+.pytest_cache/
+
+# Archivos de pruebas temporales
+test_requirements.txt
+
+# Carpetas de distribución / construcción
+build/
+dist/
+*.egg-info/
+
+# Archivos de configuración de editores / IDEs
+.vscode/
+.idea/
+
+# Sistema operativo
+Thumbs.db
+Desktop.ini
+.DS_Store
