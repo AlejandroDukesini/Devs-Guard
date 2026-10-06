@@ -27,3 +27,22 @@ dist/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Cobertura / informes locales
+.coverage
+coverage.xml
+htmlcov/
+*.sarif
+depguard-report.*
+
+# Herramientas
+.mypy_cache/
+.ruff_cache/
+
+# Web demo
+web/node_modules/
+web/dist/
+web/coverage/
+web/test-results/
+web/playwright-report/
+.netlify/

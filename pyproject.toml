@@ -1,0 +1,94 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "depguard"
+dynamic = ["version"]
+description = "Dependency vulnerability scanner with explainable risk prioritization and auditable policies."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Alejandro Dukesini" }]
+keywords = ["security", "devsecops", "sca", "osv", "sbom", "cyclonedx", "sarif", "vulnerability"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+  "httpx>=0.28,<1",
+  "rich>=13.7",
+  "packaging>=24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0",
+  "pytest-cov>=7.0",
+  "respx>=0.23",
+  "ruff>=0.16",
+  "mypy>=2.0",
+  "bandit>=1.9",
+]
+
+[project.scripts]
+depguard = "dep_guard.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/AlejandroDukesini/Devs-Guard"
+Issues = "https://github.com/AlejandroDukesini/Devs-Guard/issues"
+Security = "https://github.com/AlejandroDukesini/Devs-Guard/security/policy"
+
+[tool.hatch.version]
+path = "dep_guard/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["dep_guard"]
+
+[tool.hatch.build.targets.sdist]
+include = ["dep_guard", "tests", "fixtures", "README.md", "LICENSE", "CHANGELOG.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = ["network: hits real external APIs (deselected by default in CI unit job)"]
+
+[tool.coverage.run]
+source = ["dep_guard"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "PL", "C4"]
+# Style-only rules: complexity is reviewed by humans, not capped by numbers.
+ignore = [
+  "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR0917", "PLR2004",
+  "SIM108", "RUF001", "RUF002", "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "PLR2004", "S105", "S106"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+files = ["dep_guard"]
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", "web"]

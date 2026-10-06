@@ -1,34 +1,36 @@
-import json
-import re
-from typing import List, Dict
+"""Deprecated compatibility layer for the original 0.x API.
 
-def parse_requirements_txt(content: str) -> List[Dict[str, str]]:
-    """Extrae paquetes y versiones de un archivo requirements.txt"""
-    dependencies = []
-    lines = content.splitlines()
-    
-    for line in lines:
-        line = line.strip()
-        if not line or line.startswith('#'):
-            continue
-        
-        # Coincide con formatos como: package==1.2.3 o package>=1.2.3
-        match = re.match(r'^([a-zA-Z0-9_\-]+)\s*([<>=!~]+)\s*([0-9a-zA-Z\.]+)', line)
-        if match:
-            pkg, op, ver = match.groups()
-            dependencies.append({"name": pkg, "version": ver, "ecosystem": "PyPI"})
-    return dependencies
+New code should use dep_guard.adapters. These helpers now return only
+dependencies with an exact version: the old behaviour (taking the version
+from any operator, e.g. `flask>=2.0` -> 2.0, or `^4.18.2` -> 4.18.2) scanned
+versions that were not necessarily installed.
+"""
 
-def parse_package_json(content: str) -> List[Dict[str, str]]:
-    """Extrae dependencias directas de un archivo package.json"""
-    data = json.loads(content)
-    dependencies = []
-    
-    deps = {**data.get("dependencies", {}), **data.get("devDependencies", {})}
-    for pkg, ver in deps.items():
-        # Limpia caracteres comunes de semver (~, ^)
-        clean_ver = re.sub(r'[^0-9.]', '', ver)
-        if clean_ver:
-            dependencies.append({"name": pkg, "version": clean_ver, "ecosystem": "npm"})
-            
-    return dependencies
+from __future__ import annotations
+
+import warnings
+
+from dep_guard.adapters.base import ParseContext
+from dep_guard.adapters.npm import PackageJsonAdapter
+from dep_guard.adapters.pypi_requirements import RequirementsAdapter
+from dep_guard.models import Component
+
+
+def _legacy(components: list[Component]) -> list[dict[str, str]]:
+    return [
+        {"name": c.name, "version": c.version, "ecosystem": c.ecosystem}
+        for c in components
+        if c.version is not None
+    ]
+
+
+def parse_requirements_txt(content: str) -> list[dict[str, str]]:
+    warnings.warn("use dep_guard.adapters", DeprecationWarning, stacklevel=2)
+    return _legacy(
+        RequirementsAdapter().parse(content, ParseContext("requirements.txt")).components
+    )
+
+
+def parse_package_json(content: str) -> list[dict[str, str]]:
+    warnings.warn("use dep_guard.adapters", DeprecationWarning, stacklevel=2)
+    return _legacy(PackageJsonAdapter().parse(content, ParseContext("package.json")).components)

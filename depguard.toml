@@ -1,0 +1,12 @@
+# DepGuard configuration for this repository (dogfooding: CI scans itself).
+# Reference: docs/configuration.md
+
+[scan]
+# Test fixtures contain intentionally vulnerable *fictional* packages.
+exclude = ["fixtures/**", "tests/**"]
+
+[policy]
+fail_on_priority = "P1"
+fail_on_kev = true
+fail_on_incomplete = true
+fail_on_expired_ignore = true
