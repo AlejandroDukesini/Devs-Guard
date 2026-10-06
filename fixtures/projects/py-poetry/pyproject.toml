@@ -1,0 +1,12 @@
+[tool.poetry]
+name = "demo-api"
+version = "0.1.0"
+description = "fixture"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+acme-web = "^2.0"
+Acme_Crypto = "41.0.0"
+
+[tool.poetry.group.dev.dependencies]
+acme-lint = "^1.0"

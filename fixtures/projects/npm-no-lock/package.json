@@ -1,0 +1,19 @@
+{
+  "name": "widget",
+  "dependencies": {
+    "acme-router": "^4.1.0",
+    "left-pad-plus": "1.0.0",
+    "exact-eq": "=2.0.0",
+    "pre": "3.0.0-beta.1",
+    "local": "file:../local",
+    "range": ">=1.0.0 <2.0.0",
+    "aliased": "npm:acme-qs@6.2.0",
+    "anything": "*"
+  },
+  "devDependencies": {
+    "acme-test": "2.3.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

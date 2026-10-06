@@ -1,0 +1,24 @@
+# Policy fixture used by fixtures/golden/report-npm-app-policy.json.
+# "today" in tests is 2099-01-15.
+
+[policy]
+fail_on_priority = "P0"
+fail_on_kev = false
+include_dev = false
+
+[[ignore]]
+id = "CVE-2099-1003"
+reason = "Padding helper only receives constant input in our code paths"
+expires = 2099-06-30
+owner = "appsec@acme.invalid"
+
+[[ignore]]
+package = "acme-cookie"
+id = "GHSA-dmo1-ck05-0002"
+reason = "Cookie parser is unused: framework replaces it at runtime"
+expires = 2099-01-01
+
+[[ignore]]
+id = "CVE-2099-9999"
+reason = "Leftover exception for a dependency that was removed"
+expires = 2099-12-31

@@ -1,0 +1,48 @@
+{
+  "id": "GHSA-dmo1-tp31-0005",
+  "modified": "2099-01-01T00:00:00Z",
+  "published": "2099-01-01T00:00:00Z",
+  "aliases": [
+    "CVE-2099-1005",
+    "PYSEC-2099-0005"
+  ],
+  "summary": "acme-templates sandbox escape (GHSA)",
+  "details": "acme-templates sandbox escape (GHSA)",
+  "affected": [
+    {
+      "package": {
+        "ecosystem": "PyPI",
+        "name": "acme-templates"
+      },
+      "ranges": [
+        {
+          "type": "ECOSYSTEM",
+          "events": [
+            {
+              "introduced": "3.0.0"
+            },
+            {
+              "fixed": "3.1.4"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "type": "ADVISORY",
+      "url": "https://example.invalid/advisories/GHSA-dmo1-tp31-0005"
+    },
+    {
+      "type": "WEB",
+      "url": "http://insecure.example.invalid/ignored"
+    }
+  ],
+  "database_specific": {
+    "severity": "MODERATE",
+    "cwe_ids": [
+      "CWE-693"
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "id": "GHSA-dmo1-ck05-0002",
+  "modified": "2099-01-01T00:00:00Z",
+  "published": "2099-01-01T00:00:00Z",
+  "aliases": [],
+  "summary": "acme-cookie [bold]parses[/bold] cookie names \u001b[31mout of bounds",
+  "details": "acme-cookie [bold]parses[/bold] cookie names \u001b[31mout of bounds",
+  "affected": [
+    {
+      "package": {
+        "ecosystem": "npm",
+        "name": "acme-cookie"
+      },
+      "ranges": [
+        {
+          "type": "SEMVER",
+          "events": [
+            {
+              "introduced": "0"
+            },
+            {
+              "fixed": "0.7.0"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "type": "ADVISORY",
+      "url": "https://example.invalid/advisories/GHSA-dmo1-ck05-0002"
+    },
+    {
+      "type": "WEB",
+      "url": "http://insecure.example.invalid/ignored"
+    }
+  ],
+  "database_specific": {
+    "severity": "MODERATE",
+    "cwe_ids": [
+      "CWE-74"
+    ]
+  }
+}

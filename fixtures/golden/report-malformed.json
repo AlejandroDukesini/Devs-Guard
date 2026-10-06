@@ -1,0 +1,60 @@
+{
+  "schema": "depguard.report/v1",
+  "verdict": "INCOMPLETE",
+  "exit_code": 3,
+  "summary": {
+    "manifests": 1,
+    "components": 0,
+    "direct": 0,
+    "vulnerable_components": 0,
+    "findings": 0,
+    "ignored": 0,
+    "by_priority": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0
+    },
+    "by_severity": {
+      "CRITICAL": 0,
+      "HIGH": 0,
+      "MEDIUM": 0,
+      "LOW": 0,
+      "UNKNOWN": 0
+    },
+    "unresolved": 0,
+    "errors": 0,
+    "private": 0
+  },
+  "policy": {
+    "violations": [],
+    "incomplete_reasons": [
+      "1 manifest files could not be parsed"
+    ],
+    "expired_ignores": [],
+    "unused_ignores": []
+  },
+  "sources": {
+    "osv": "ok",
+    "epss": "not needed",
+    "kev": "not needed"
+  },
+  "manifests": [
+    {
+      "path": "package-lock.json",
+      "adapter": "npm-package-lock",
+      "components": 0,
+      "error": "invalid JSON at line 7"
+    }
+  ],
+  "findings": [],
+  "remediation": [],
+  "components": [],
+  "problems": [
+    {
+      "code": "parse_error",
+      "message": "invalid JSON at line 7",
+      "file": "package-lock.json"
+    }
+  ]
+}

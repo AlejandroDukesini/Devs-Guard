@@ -1,0 +1,13 @@
+{
+  "name": "demo-shop",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "acme-router": "^4.1.0",
+    "left-pad-plus": "1.0.0",
+    "acme-fork": "github:acme/fork"
+  },
+  "devDependencies": {
+    "acme-test": "^2.0.0"
+  }
+}

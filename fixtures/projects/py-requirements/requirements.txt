@@ -1,0 +1,14 @@
+# Production dependencies (fixture: every supported and unsupported form)
+--index-url https://user:secret-token@pypi.example.invalid/simple
+-r base.txt
+acme-web==2.0.1
+Acme_Templates==3.1.0  # inline comment, name needs PEP 503 normalisation
+acme-crypto[ssl]==41.0.0 ; python_version >= "3.11"
+acme-markup==2.1.5 \
+    --hash=sha256:0000000000000000000000000000000000000000000000000000000000000000
+acme-range>=1.0,<2.0
+acme-unpinned
+acme-wild==1.*
+acme-direct @ https://example.invalid/acme_direct-1.0-py3-none-any.whl
+-e ./local-package
+this is not a requirement !!

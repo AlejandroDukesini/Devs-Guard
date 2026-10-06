@@ -1,0 +1,48 @@
+{
+  "id": "OSV-2099-0001",
+  "modified": "2099-01-01T00:00:00Z",
+  "published": "2099-01-01T00:00:00Z",
+  "aliases": [
+    "CVE-2099-1001"
+  ],
+  "summary": "",
+  "details": "### Duplicate record\nSame issue as GHSA-dmo1-qs62-0001",
+  "affected": [
+    {
+      "package": {
+        "ecosystem": "npm",
+        "name": "acme-qs"
+      },
+      "ranges": [
+        {
+          "type": "SEMVER",
+          "events": [
+            {
+              "introduced": "0"
+            },
+            {
+              "fixed": "5.1.2"
+            },
+            {
+              "introduced": "6.0.0"
+            },
+            {
+              "fixed": "6.2.4"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "type": "ADVISORY",
+      "url": "https://example.invalid/advisories/OSV-2099-0001"
+    },
+    {
+      "type": "WEB",
+      "url": "http://insecure.example.invalid/ignored"
+    }
+  ],
+  "database_specific": {}
+}

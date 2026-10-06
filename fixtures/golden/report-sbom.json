@@ -1,0 +1,321 @@
+{
+  "schema": "depguard.report/v1",
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "summary": {
+    "manifests": 1,
+    "components": 4,
+    "direct": 3,
+    "vulnerable_components": 2,
+    "findings": 2,
+    "ignored": 0,
+    "by_priority": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "P3": 1
+    },
+    "by_severity": {
+      "CRITICAL": 0,
+      "HIGH": 1,
+      "MEDIUM": 0,
+      "LOW": 1,
+      "UNKNOWN": 0
+    },
+    "unresolved": 0,
+    "errors": 0,
+    "private": 0
+  },
+  "policy": {
+    "violations": [
+      "CVE-2099-1008 in com.acme:acme-json@2.9.0: priority P1 (limit P1)"
+    ],
+    "incomplete_reasons": [],
+    "expired_ignores": [],
+    "unused_ignores": []
+  },
+  "sources": {
+    "osv": "ok",
+    "epss": "ok",
+    "kev": "ok"
+  },
+  "manifests": [
+    {
+      "path": "app.cdx.json",
+      "adapter": "cyclonedx-json",
+      "components": 4,
+      "error": null
+    }
+  ],
+  "findings": [
+    {
+      "id": "CVE-2099-1008",
+      "aliases": [
+        "CVE-2099-1008",
+        "GHSA-dmo1-js29-0008"
+      ],
+      "summary": "acme-json deserialization gadget",
+      "severity": "HIGH",
+      "cvss": {
+        "score": 8.1,
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      },
+      "cwes": [
+        "CWE-502"
+      ],
+      "package": {
+        "name": "com.acme:acme-json",
+        "version": "2.9.0",
+        "ecosystem": "Maven",
+        "purl": "pkg:maven/com.acme/acme-json@2.9.0",
+        "direct": true,
+        "scope": "prod",
+        "paths": [
+          [
+            "com.acme:acme-json"
+          ]
+        ],
+        "locations": [
+          {
+            "file": "app.cdx.json",
+            "line": 11
+          }
+        ]
+      },
+      "fixed_versions": [
+        "2.9.5"
+      ],
+      "references": [
+        "https://example.invalid/advisories/GHSA-dmo1-js29-0008"
+      ],
+      "published": "2099-01-01T00:00:00Z",
+      "epss": null,
+      "kev": false,
+      "priority": "P1",
+      "reasons": [
+        {
+          "code": "epss_unknown",
+          "text": "EPSS no disponible"
+        },
+        {
+          "code": "severity_high",
+          "text": "Severidad HIGH CVSS 8.1"
+        },
+        {
+          "code": "scope_prod",
+          "text": "Dependencia de producción"
+        },
+        {
+          "code": "direct",
+          "text": "Dependencia directa"
+        },
+        {
+          "code": "fix_available",
+          "text": "Corregida en 2.9.5"
+        }
+      ],
+      "status": "active",
+      "ignore": null
+    },
+    {
+      "id": "CVE-2099-1004",
+      "aliases": [
+        "CVE-2099-1004",
+        "GHSA-dmo1-lg14-0004"
+      ],
+      "summary": "@acme/logger log injection",
+      "severity": "LOW",
+      "cvss": {
+        "score": null,
+        "vector": null
+      },
+      "cwes": [
+        "CWE-117"
+      ],
+      "package": {
+        "name": "@acme/logger",
+        "version": "1.4.0",
+        "ecosystem": "npm",
+        "purl": "pkg:npm/%40acme/logger@1.4.0",
+        "direct": true,
+        "scope": "dev",
+        "paths": [
+          [
+            "@acme/logger"
+          ]
+        ],
+        "locations": [
+          {
+            "file": "app.cdx.json",
+            "line": 32
+          }
+        ]
+      },
+      "fixed_versions": [
+        "1.4.1"
+      ],
+      "references": [
+        "https://example.invalid/advisories/GHSA-dmo1-lg14-0004"
+      ],
+      "published": "2099-01-01T00:00:00Z",
+      "epss": null,
+      "kev": false,
+      "priority": "P3",
+      "reasons": [
+        {
+          "code": "epss_unknown",
+          "text": "EPSS no disponible"
+        },
+        {
+          "code": "severity_low",
+          "text": "Severidad LOW"
+        },
+        {
+          "code": "scope_dev",
+          "text": "Dependencia solo de desarrollo"
+        },
+        {
+          "code": "direct",
+          "text": "Dependencia directa"
+        },
+        {
+          "code": "fix_available",
+          "text": "Corregida en 1.4.1"
+        }
+      ],
+      "status": "active",
+      "ignore": null
+    }
+  ],
+  "remediation": [
+    {
+      "package": "com.acme:acme-json",
+      "ecosystem": "Maven",
+      "current": "2.9.0",
+      "upgrade_to": "2.9.5",
+      "fixes": 1,
+      "of": 1,
+      "direct": true,
+      "via": [
+        "com.acme:acme-json"
+      ],
+      "top_priority": "P1"
+    },
+    {
+      "package": "@acme/logger",
+      "ecosystem": "npm",
+      "current": "1.4.0",
+      "upgrade_to": "1.4.1",
+      "fixes": 1,
+      "of": 1,
+      "direct": true,
+      "via": [
+        "@acme/logger"
+      ],
+      "top_priority": "P3"
+    }
+  ],
+  "components": [
+    {
+      "name": "github.com/acme/acme-net",
+      "version": "v0.17.0",
+      "ecosystem": "Go",
+      "purl": "pkg:golang/github.com/acme/acme-net@v0.17.0",
+      "direct": true,
+      "scope": "prod",
+      "status": "clean",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "github.com/acme/acme-net"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "app.cdx.json",
+          "line": 26
+        }
+      ]
+    },
+    {
+      "name": "com.acme:acme-json",
+      "version": "2.9.0",
+      "ecosystem": "Maven",
+      "purl": "pkg:maven/com.acme/acme-json@2.9.0",
+      "direct": true,
+      "scope": "prod",
+      "status": "vulnerable",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "com.acme:acme-json"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "app.cdx.json",
+          "line": 11
+        }
+      ]
+    },
+    {
+      "name": "com.acme:acme-json-core",
+      "version": "2.9.0",
+      "ecosystem": "Maven",
+      "purl": "pkg:maven/com.acme/acme-json-core@2.9.0",
+      "direct": false,
+      "scope": "prod",
+      "status": "clean",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "com.acme:acme-json",
+          "com.acme:acme-json-core"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "app.cdx.json",
+          "line": 18
+        }
+      ]
+    },
+    {
+      "name": "@acme/logger",
+      "version": "1.4.0",
+      "ecosystem": "npm",
+      "purl": "pkg:npm/%40acme/logger@1.4.0",
+      "direct": true,
+      "scope": "dev",
+      "status": "vulnerable",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "@acme/logger"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "app.cdx.json",
+          "line": 32
+        }
+      ]
+    }
+  ],
+  "problems": [
+    {
+      "code": "missing_purl",
+      "message": "component no-purl has no valid purl",
+      "file": "app.cdx.json"
+    },
+    {
+      "code": "unsupported_purl_types",
+      "message": "components skipped, purl types not supported: deb",
+      "file": "app.cdx.json"
+    }
+  ]
+}

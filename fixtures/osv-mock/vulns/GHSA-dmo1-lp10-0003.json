@@ -1,0 +1,50 @@
+{
+  "id": "GHSA-dmo1-lp10-0003",
+  "modified": "2099-01-01T00:00:00Z",
+  "published": "2099-01-01T00:00:00Z",
+  "aliases": [
+    "CVE-2099-1003"
+  ],
+  "summary": "left-pad-plus remote code execution via crafted padding",
+  "details": "left-pad-plus remote code execution via crafted padding",
+  "affected": [
+    {
+      "package": {
+        "ecosystem": "npm",
+        "name": "left-pad-plus"
+      },
+      "ranges": [
+        {
+          "type": "SEMVER",
+          "events": [
+            {
+              "introduced": "0"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "type": "ADVISORY",
+      "url": "https://example.invalid/advisories/GHSA-dmo1-lp10-0003"
+    },
+    {
+      "type": "WEB",
+      "url": "http://insecure.example.invalid/ignored"
+    }
+  ],
+  "database_specific": {
+    "severity": "CRITICAL",
+    "cwe_ids": [
+      "CWE-94"
+    ]
+  },
+  "severity": [
+    {
+      "type": "CVSS_V3",
+      "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+    }
+  ]
+}

@@ -1,0 +1,533 @@
+{
+  "schema": "depguard.report/v1",
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "summary": {
+    "manifests": 2,
+    "components": 9,
+    "direct": 9,
+    "vulnerable_components": 3,
+    "findings": 3,
+    "ignored": 0,
+    "by_priority": {
+      "P0": 0,
+      "P1": 2,
+      "P2": 1,
+      "P3": 0
+    },
+    "by_severity": {
+      "CRITICAL": 0,
+      "HIGH": 2,
+      "MEDIUM": 1,
+      "LOW": 0,
+      "UNKNOWN": 0
+    },
+    "unresolved": 4,
+    "errors": 0,
+    "private": 0
+  },
+  "policy": {
+    "violations": [
+      "CVE-2099-1006 in acme-crypto@41.0.0: priority P1 (limit P1)",
+      "CVE-2099-1005 in acme-templates@3.1.0: priority P1 (limit P1)"
+    ],
+    "incomplete_reasons": [],
+    "expired_ignores": [],
+    "unused_ignores": []
+  },
+  "sources": {
+    "osv": "ok",
+    "epss": "ok",
+    "kev": "ok"
+  },
+  "manifests": [
+    {
+      "path": "requirements-dev.txt",
+      "adapter": "pip-requirements",
+      "components": 1,
+      "error": null
+    },
+    {
+      "path": "requirements.txt",
+      "adapter": "pip-requirements",
+      "components": 8,
+      "error": null
+    }
+  ],
+  "findings": [
+    {
+      "id": "CVE-2099-1006",
+      "aliases": [
+        "CVE-2099-1006",
+        "GHSA-dmo1-cr41-0006"
+      ],
+      "summary": "acme-crypto NULL dereference on malformed certificate",
+      "severity": "HIGH",
+      "cvss": {
+        "score": 7.5,
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      "cwes": [
+        "CWE-476"
+      ],
+      "package": {
+        "name": "acme-crypto",
+        "version": "41.0.0",
+        "ecosystem": "PyPI",
+        "purl": "pkg:pypi/acme-crypto@41.0.0",
+        "direct": true,
+        "scope": "prod",
+        "paths": [
+          [
+            "acme-crypto"
+          ]
+        ],
+        "locations": [
+          {
+            "file": "requirements.txt",
+            "line": 6
+          }
+        ]
+      },
+      "fixed_versions": [
+        "41.0.6"
+      ],
+      "references": [
+        "https://example.invalid/advisories/GHSA-dmo1-cr41-0006"
+      ],
+      "published": "2099-01-01T00:00:00Z",
+      "epss": {
+        "score": 0.011,
+        "percentile": 0.77
+      },
+      "kev": false,
+      "priority": "P1",
+      "reasons": [
+        {
+          "code": "epss_low",
+          "text": "EPSS 0.011 (percentil 77)"
+        },
+        {
+          "code": "severity_high",
+          "text": "Severidad HIGH CVSS 7.5"
+        },
+        {
+          "code": "scope_prod",
+          "text": "Dependencia de producción"
+        },
+        {
+          "code": "direct",
+          "text": "Dependencia directa"
+        },
+        {
+          "code": "fix_available",
+          "text": "Corregida en 41.0.6"
+        }
+      ],
+      "status": "active",
+      "ignore": null
+    },
+    {
+      "id": "CVE-2099-1005",
+      "aliases": [
+        "CVE-2099-1005",
+        "GHSA-dmo1-tp31-0005",
+        "PYSEC-2099-0005"
+      ],
+      "summary": "acme-templates sandbox escape (GHSA)",
+      "severity": "MEDIUM",
+      "cvss": {
+        "score": 6.1,
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:H/I:N/A:N"
+      },
+      "cwes": [
+        "CWE-693"
+      ],
+      "package": {
+        "name": "acme-templates",
+        "version": "3.1.0",
+        "ecosystem": "PyPI",
+        "purl": "pkg:pypi/acme-templates@3.1.0",
+        "direct": true,
+        "scope": "prod",
+        "paths": [
+          [
+            "acme-templates"
+          ]
+        ],
+        "locations": [
+          {
+            "file": "requirements.txt",
+            "line": 5
+          }
+        ]
+      },
+      "fixed_versions": [
+        "3.1.4"
+      ],
+      "references": [
+        "https://example.invalid/advisories/GHSA-dmo1-tp31-0005",
+        "https://example.invalid/advisories/PYSEC-2099-0005"
+      ],
+      "published": "2099-01-01T00:00:00Z",
+      "epss": {
+        "score": 0.42,
+        "percentile": 0.97
+      },
+      "kev": false,
+      "priority": "P1",
+      "reasons": [
+        {
+          "code": "epss_high",
+          "text": "EPSS 0.420 (percentil 97)"
+        },
+        {
+          "code": "severity_medium",
+          "text": "Severidad MEDIUM CVSS 6.1"
+        },
+        {
+          "code": "scope_prod",
+          "text": "Dependencia de producción"
+        },
+        {
+          "code": "direct",
+          "text": "Dependencia directa"
+        },
+        {
+          "code": "fix_available",
+          "text": "Corregida en 3.1.4"
+        }
+      ],
+      "status": "active",
+      "ignore": null
+    },
+    {
+      "id": "CVE-2099-1007",
+      "aliases": [
+        "CVE-2099-1007",
+        "GHSA-dmo1-ln10-0007"
+      ],
+      "summary": "acme-lint arbitrary file write",
+      "severity": "HIGH",
+      "cvss": {
+        "score": 7.8,
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H"
+      },
+      "cwes": [],
+      "package": {
+        "name": "acme-lint",
+        "version": "1.0.0",
+        "ecosystem": "PyPI",
+        "purl": "pkg:pypi/acme-lint@1.0.0",
+        "direct": true,
+        "scope": "dev",
+        "paths": [
+          [
+            "acme-lint"
+          ]
+        ],
+        "locations": [
+          {
+            "file": "requirements-dev.txt",
+            "line": 1
+          }
+        ]
+      },
+      "fixed_versions": [
+        "1.0.3"
+      ],
+      "references": [
+        "https://example.invalid/advisories/GHSA-dmo1-ln10-0007"
+      ],
+      "published": "2099-01-01T00:00:00Z",
+      "epss": {
+        "score": 0.0005,
+        "percentile": 0.12
+      },
+      "kev": false,
+      "priority": "P2",
+      "reasons": [
+        {
+          "code": "epss_low",
+          "text": "EPSS 0.001 (percentil 12)"
+        },
+        {
+          "code": "severity_high",
+          "text": "Severidad HIGH CVSS 7.8"
+        },
+        {
+          "code": "scope_dev",
+          "text": "Dependencia solo de desarrollo"
+        },
+        {
+          "code": "direct",
+          "text": "Dependencia directa"
+        },
+        {
+          "code": "fix_available",
+          "text": "Corregida en 1.0.3"
+        }
+      ],
+      "status": "active",
+      "ignore": null
+    }
+  ],
+  "remediation": [
+    {
+      "package": "acme-crypto",
+      "ecosystem": "PyPI",
+      "current": "41.0.0",
+      "upgrade_to": "41.0.6",
+      "fixes": 1,
+      "of": 1,
+      "direct": true,
+      "via": [
+        "acme-crypto"
+      ],
+      "top_priority": "P1"
+    },
+    {
+      "package": "acme-templates",
+      "ecosystem": "PyPI",
+      "current": "3.1.0",
+      "upgrade_to": "3.1.4",
+      "fixes": 1,
+      "of": 1,
+      "direct": true,
+      "via": [
+        "acme-templates"
+      ],
+      "top_priority": "P1"
+    },
+    {
+      "package": "acme-lint",
+      "ecosystem": "PyPI",
+      "current": "1.0.0",
+      "upgrade_to": "1.0.3",
+      "fixes": 1,
+      "of": 1,
+      "direct": true,
+      "via": [
+        "acme-lint"
+      ],
+      "top_priority": "P2"
+    }
+  ],
+  "components": [
+    {
+      "name": "acme-crypto",
+      "version": "41.0.0",
+      "ecosystem": "PyPI",
+      "purl": "pkg:pypi/acme-crypto@41.0.0",
+      "direct": true,
+      "scope": "prod",
+      "status": "vulnerable",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "acme-crypto"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "requirements.txt",
+          "line": 6
+        }
+      ]
+    },
+    {
+      "name": "acme-direct",
+      "version": null,
+      "ecosystem": "PyPI",
+      "purl": "pkg:pypi/acme-direct",
+      "direct": true,
+      "scope": "prod",
+      "status": "unresolved",
+      "unresolved_reason": "direct URL reference",
+      "error": null,
+      "paths": [
+        [
+          "acme-direct"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "requirements.txt",
+          "line": 12
+        }
+      ]
+    },
+    {
+      "name": "acme-lint",
+      "version": "1.0.0",
+      "ecosystem": "PyPI",
+      "purl": "pkg:pypi/acme-lint@1.0.0",
+      "direct": true,
+      "scope": "dev",
+      "status": "vulnerable",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "acme-lint"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "requirements-dev.txt",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "acme-markup",
+      "version": "2.1.5",
+      "ecosystem": "PyPI",
+      "purl": "pkg:pypi/acme-markup@2.1.5",
+      "direct": true,
+      "scope": "prod",
+      "status": "clean",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "acme-markup"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "requirements.txt",
+          "line": 7
+        }
+      ]
+    },
+    {
+      "name": "acme-range",
+      "version": null,
+      "ecosystem": "PyPI",
+      "purl": "pkg:pypi/acme-range",
+      "direct": true,
+      "scope": "prod",
+      "status": "unresolved",
+      "unresolved_reason": "not pinned (<2.0,>=1.0)",
+      "error": null,
+      "paths": [
+        [
+          "acme-range"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "requirements.txt",
+          "line": 9
+        }
+      ]
+    },
+    {
+      "name": "acme-templates",
+      "version": "3.1.0",
+      "ecosystem": "PyPI",
+      "purl": "pkg:pypi/acme-templates@3.1.0",
+      "direct": true,
+      "scope": "prod",
+      "status": "vulnerable",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "acme-templates"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "requirements.txt",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "name": "acme-unpinned",
+      "version": null,
+      "ecosystem": "PyPI",
+      "purl": "pkg:pypi/acme-unpinned",
+      "direct": true,
+      "scope": "prod",
+      "status": "unresolved",
+      "unresolved_reason": "no version specified",
+      "error": null,
+      "paths": [
+        [
+          "acme-unpinned"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "requirements.txt",
+          "line": 10
+        }
+      ]
+    },
+    {
+      "name": "acme-web",
+      "version": "2.0.1",
+      "ecosystem": "PyPI",
+      "purl": "pkg:pypi/acme-web@2.0.1",
+      "direct": true,
+      "scope": "prod",
+      "status": "clean",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "acme-web"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "requirements.txt",
+          "line": 4
+        }
+      ]
+    },
+    {
+      "name": "acme-wild",
+      "version": null,
+      "ecosystem": "PyPI",
+      "purl": "pkg:pypi/acme-wild",
+      "direct": true,
+      "scope": "prod",
+      "status": "unresolved",
+      "unresolved_reason": "not pinned (==1.*)",
+      "error": null,
+      "paths": [
+        [
+          "acme-wild"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "requirements.txt",
+          "line": 11
+        }
+      ]
+    }
+  ],
+  "problems": [
+    {
+      "code": "include_not_followed",
+      "message": "line 3: nested requirement/constraint files are not followed; scan them directly (directory scans find them automatically)",
+      "file": "requirements.txt"
+    },
+    {
+      "code": "editable_skipped",
+      "message": "line 13: editable install skipped",
+      "file": "requirements.txt"
+    },
+    {
+      "code": "invalid_requirement",
+      "message": "line 14: not a valid PEP 508 requirement",
+      "file": "requirements.txt"
+    }
+  ]
+}

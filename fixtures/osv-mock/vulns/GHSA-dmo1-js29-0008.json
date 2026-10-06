@@ -1,0 +1,53 @@
+{
+  "id": "GHSA-dmo1-js29-0008",
+  "modified": "2099-01-01T00:00:00Z",
+  "published": "2099-01-01T00:00:00Z",
+  "aliases": [
+    "CVE-2099-1008"
+  ],
+  "summary": "acme-json deserialization gadget",
+  "details": "acme-json deserialization gadget",
+  "affected": [
+    {
+      "package": {
+        "ecosystem": "Maven",
+        "name": "com.acme:acme-json"
+      },
+      "ranges": [
+        {
+          "type": "SEMVER",
+          "events": [
+            {
+              "introduced": "2.0.0"
+            },
+            {
+              "fixed": "2.9.5"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "type": "ADVISORY",
+      "url": "https://example.invalid/advisories/GHSA-dmo1-js29-0008"
+    },
+    {
+      "type": "WEB",
+      "url": "http://insecure.example.invalid/ignored"
+    }
+  ],
+  "database_specific": {
+    "severity": "HIGH",
+    "cwe_ids": [
+      "CWE-502"
+    ]
+  },
+  "severity": [
+    {
+      "type": "CVSS_V3",
+      "score": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+    }
+  ]
+}

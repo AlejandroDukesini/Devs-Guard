@@ -1,0 +1,675 @@
+{
+  "schema": "depguard.report/v1",
+  "verdict": "FAIL",
+  "exit_code": 1,
+  "summary": {
+    "manifests": 1,
+    "components": 8,
+    "direct": 4,
+    "vulnerable_components": 5,
+    "findings": 5,
+    "ignored": 0,
+    "by_priority": {
+      "P0": 1,
+      "P1": 2,
+      "P2": 1,
+      "P3": 1
+    },
+    "by_severity": {
+      "CRITICAL": 1,
+      "HIGH": 2,
+      "MEDIUM": 1,
+      "LOW": 1,
+      "UNKNOWN": 0
+    },
+    "unresolved": 1,
+    "errors": 0,
+    "private": 0
+  },
+  "policy": {
+    "violations": [
+      "CVE-2099-1001 in acme-qs@6.2.0: priority P0 (limit P1)",
+      "CVE-2099-1003 in left-pad-plus@1.0.0: priority P1 (limit P1)",
+      "CVE-2099-1001 in acme-qs@5.1.0: priority P1 (limit P1)"
+    ],
+    "incomplete_reasons": [],
+    "expired_ignores": [],
+    "unused_ignores": []
+  },
+  "sources": {
+    "osv": "ok",
+    "epss": "ok",
+    "kev": "ok"
+  },
+  "manifests": [
+    {
+      "path": "package-lock.json",
+      "adapter": "npm-package-lock",
+      "components": 8,
+      "error": null
+    }
+  ],
+  "findings": [
+    {
+      "id": "CVE-2099-1001",
+      "aliases": [
+        "CVE-2099-1001",
+        "GHSA-dmo1-qs62-0001",
+        "OSV-2099-0001"
+      ],
+      "summary": "acme-qs prototype pollution allows denial of service",
+      "severity": "HIGH",
+      "cvss": {
+        "score": 7.5,
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      "cwes": [
+        "CWE-1321"
+      ],
+      "package": {
+        "name": "acme-qs",
+        "version": "6.2.0",
+        "ecosystem": "npm",
+        "purl": "pkg:npm/acme-qs@6.2.0",
+        "direct": false,
+        "scope": "prod",
+        "paths": [
+          [
+            "acme-router",
+            "acme-qs"
+          ]
+        ],
+        "locations": [
+          {
+            "file": "package-lock.json",
+            "line": 31
+          }
+        ]
+      },
+      "fixed_versions": [
+        "6.2.4"
+      ],
+      "references": [
+        "https://example.invalid/advisories/GHSA-dmo1-qs62-0001",
+        "https://example.invalid/advisories/OSV-2099-0001"
+      ],
+      "published": "2099-01-01T00:00:00Z",
+      "epss": {
+        "score": 0.62,
+        "percentile": 0.99
+      },
+      "kev": true,
+      "priority": "P0",
+      "reasons": [
+        {
+          "code": "kev",
+          "text": "Explotación activa confirmada (CISA KEV)"
+        },
+        {
+          "code": "epss_high",
+          "text": "EPSS 0.620 (percentil 99)"
+        },
+        {
+          "code": "severity_high",
+          "text": "Severidad HIGH CVSS 7.5"
+        },
+        {
+          "code": "scope_prod",
+          "text": "Dependencia de producción"
+        },
+        {
+          "code": "transitive",
+          "text": "Transitiva vía acme-router > acme-qs"
+        },
+        {
+          "code": "fix_available",
+          "text": "Corregida en 6.2.4"
+        }
+      ],
+      "status": "active",
+      "ignore": null
+    },
+    {
+      "id": "CVE-2099-1003",
+      "aliases": [
+        "CVE-2099-1003",
+        "GHSA-dmo1-lp10-0003"
+      ],
+      "summary": "left-pad-plus remote code execution via crafted padding",
+      "severity": "CRITICAL",
+      "cvss": {
+        "score": 9.8,
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      },
+      "cwes": [
+        "CWE-94"
+      ],
+      "package": {
+        "name": "left-pad-plus",
+        "version": "1.0.0",
+        "ecosystem": "npm",
+        "purl": "pkg:npm/left-pad-plus@1.0.0",
+        "direct": true,
+        "scope": "prod",
+        "paths": [
+          [
+            "left-pad-plus"
+          ]
+        ],
+        "locations": [
+          {
+            "file": "package-lock.json",
+            "line": 57
+          }
+        ]
+      },
+      "fixed_versions": [],
+      "references": [
+        "https://example.invalid/advisories/GHSA-dmo1-lp10-0003"
+      ],
+      "published": "2099-01-01T00:00:00Z",
+      "epss": {
+        "score": 0.002,
+        "percentile": 0.41
+      },
+      "kev": false,
+      "priority": "P1",
+      "reasons": [
+        {
+          "code": "epss_low",
+          "text": "EPSS 0.002 (percentil 41)"
+        },
+        {
+          "code": "severity_critical",
+          "text": "Severidad CRITICAL CVSS 9.8"
+        },
+        {
+          "code": "scope_prod",
+          "text": "Dependencia de producción"
+        },
+        {
+          "code": "direct",
+          "text": "Dependencia directa"
+        },
+        {
+          "code": "no_fix",
+          "text": "Sin versión corregida publicada"
+        }
+      ],
+      "status": "active",
+      "ignore": null
+    },
+    {
+      "id": "CVE-2099-1001",
+      "aliases": [
+        "CVE-2099-1001",
+        "GHSA-dmo1-qs62-0001",
+        "OSV-2099-0001"
+      ],
+      "summary": "acme-qs prototype pollution allows denial of service",
+      "severity": "HIGH",
+      "cvss": {
+        "score": 7.5,
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      "cwes": [
+        "CWE-1321"
+      ],
+      "package": {
+        "name": "acme-qs",
+        "version": "5.1.0",
+        "ecosystem": "npm",
+        "purl": "pkg:npm/acme-qs@5.1.0",
+        "direct": false,
+        "scope": "dev",
+        "paths": [
+          [
+            "acme-test",
+            "acme-qs"
+          ]
+        ],
+        "locations": [
+          {
+            "file": "package-lock.json",
+            "line": 52
+          }
+        ]
+      },
+      "fixed_versions": [
+        "5.1.2"
+      ],
+      "references": [
+        "https://example.invalid/advisories/GHSA-dmo1-qs62-0001",
+        "https://example.invalid/advisories/OSV-2099-0001"
+      ],
+      "published": "2099-01-01T00:00:00Z",
+      "epss": {
+        "score": 0.62,
+        "percentile": 0.99
+      },
+      "kev": true,
+      "priority": "P1",
+      "reasons": [
+        {
+          "code": "kev",
+          "text": "Explotación activa confirmada (CISA KEV)"
+        },
+        {
+          "code": "epss_high",
+          "text": "EPSS 0.620 (percentil 99)"
+        },
+        {
+          "code": "severity_high",
+          "text": "Severidad HIGH CVSS 7.5"
+        },
+        {
+          "code": "scope_dev",
+          "text": "Dependencia solo de desarrollo"
+        },
+        {
+          "code": "transitive",
+          "text": "Transitiva vía acme-test > acme-qs"
+        },
+        {
+          "code": "fix_available",
+          "text": "Corregida en 5.1.2"
+        }
+      ],
+      "status": "active",
+      "ignore": null
+    },
+    {
+      "id": "GHSA-dmo1-ck05-0002",
+      "aliases": [
+        "GHSA-dmo1-ck05-0002"
+      ],
+      "summary": "acme-cookie [bold]parses[/bold] cookie names [31mout of bounds",
+      "severity": "MEDIUM",
+      "cvss": {
+        "score": null,
+        "vector": null
+      },
+      "cwes": [
+        "CWE-74"
+      ],
+      "package": {
+        "name": "acme-cookie",
+        "version": "0.5.0",
+        "ecosystem": "npm",
+        "purl": "pkg:npm/acme-cookie@0.5.0",
+        "direct": false,
+        "scope": "prod",
+        "paths": [
+          [
+            "acme-router",
+            "acme-cookie"
+          ]
+        ],
+        "locations": [
+          {
+            "file": "package-lock.json",
+            "line": 23
+          }
+        ]
+      },
+      "fixed_versions": [
+        "0.7.0"
+      ],
+      "references": [
+        "https://example.invalid/advisories/GHSA-dmo1-ck05-0002"
+      ],
+      "published": "2099-01-01T00:00:00Z",
+      "epss": null,
+      "kev": false,
+      "priority": "P2",
+      "reasons": [
+        {
+          "code": "no_cve",
+          "text": "Sin CVE asignado: EPSS/KEV no aplican"
+        },
+        {
+          "code": "severity_medium",
+          "text": "Severidad MEDIUM"
+        },
+        {
+          "code": "scope_prod",
+          "text": "Dependencia de producción"
+        },
+        {
+          "code": "transitive",
+          "text": "Transitiva vía acme-router > acme-cookie"
+        },
+        {
+          "code": "fix_available",
+          "text": "Corregida en 0.7.0"
+        }
+      ],
+      "status": "active",
+      "ignore": null
+    },
+    {
+      "id": "CVE-2099-1004",
+      "aliases": [
+        "CVE-2099-1004",
+        "GHSA-dmo1-lg14-0004"
+      ],
+      "summary": "@acme/logger log injection",
+      "severity": "LOW",
+      "cvss": {
+        "score": null,
+        "vector": null
+      },
+      "cwes": [
+        "CWE-117"
+      ],
+      "package": {
+        "name": "@acme/logger",
+        "version": "1.4.0",
+        "ecosystem": "npm",
+        "purl": "pkg:npm/%40acme/logger@1.4.0",
+        "direct": false,
+        "scope": "prod",
+        "paths": [
+          [
+            "acme-router",
+            "@acme/logger"
+          ]
+        ],
+        "locations": [
+          {
+            "file": "package-lock.json",
+            "line": 19
+          }
+        ]
+      },
+      "fixed_versions": [
+        "1.4.1"
+      ],
+      "references": [
+        "https://example.invalid/advisories/GHSA-dmo1-lg14-0004"
+      ],
+      "published": "2099-01-01T00:00:00Z",
+      "epss": null,
+      "kev": false,
+      "priority": "P3",
+      "reasons": [
+        {
+          "code": "epss_unknown",
+          "text": "EPSS no disponible"
+        },
+        {
+          "code": "severity_low",
+          "text": "Severidad LOW"
+        },
+        {
+          "code": "scope_prod",
+          "text": "Dependencia de producción"
+        },
+        {
+          "code": "transitive",
+          "text": "Transitiva vía acme-router > @acme/logger"
+        },
+        {
+          "code": "fix_available",
+          "text": "Corregida en 1.4.1"
+        }
+      ],
+      "status": "active",
+      "ignore": null
+    }
+  ],
+  "remediation": [
+    {
+      "package": "acme-qs",
+      "ecosystem": "npm",
+      "current": "6.2.0",
+      "upgrade_to": "6.2.4",
+      "fixes": 1,
+      "of": 1,
+      "direct": false,
+      "via": [
+        "acme-router",
+        "acme-qs"
+      ],
+      "top_priority": "P0"
+    },
+    {
+      "package": "acme-qs",
+      "ecosystem": "npm",
+      "current": "5.1.0",
+      "upgrade_to": "5.1.2",
+      "fixes": 1,
+      "of": 1,
+      "direct": false,
+      "via": [
+        "acme-test",
+        "acme-qs"
+      ],
+      "top_priority": "P1"
+    },
+    {
+      "package": "left-pad-plus",
+      "ecosystem": "npm",
+      "current": "1.0.0",
+      "upgrade_to": null,
+      "fixes": 0,
+      "of": 1,
+      "direct": true,
+      "via": [
+        "left-pad-plus"
+      ],
+      "top_priority": "P1"
+    },
+    {
+      "package": "acme-cookie",
+      "ecosystem": "npm",
+      "current": "0.5.0",
+      "upgrade_to": "0.7.0",
+      "fixes": 1,
+      "of": 1,
+      "direct": false,
+      "via": [
+        "acme-router",
+        "acme-cookie"
+      ],
+      "top_priority": "P2"
+    },
+    {
+      "package": "@acme/logger",
+      "ecosystem": "npm",
+      "current": "1.4.0",
+      "upgrade_to": "1.4.1",
+      "fixes": 1,
+      "of": 1,
+      "direct": false,
+      "via": [
+        "acme-router",
+        "@acme/logger"
+      ],
+      "top_priority": "P3"
+    }
+  ],
+  "components": [
+    {
+      "name": "@acme/logger",
+      "version": "1.4.0",
+      "ecosystem": "npm",
+      "purl": "pkg:npm/%40acme/logger@1.4.0",
+      "direct": false,
+      "scope": "prod",
+      "status": "vulnerable",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "acme-router",
+          "@acme/logger"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "package-lock.json",
+          "line": 19
+        }
+      ]
+    },
+    {
+      "name": "acme-cookie",
+      "version": "0.5.0",
+      "ecosystem": "npm",
+      "purl": "pkg:npm/acme-cookie@0.5.0",
+      "direct": false,
+      "scope": "prod",
+      "status": "vulnerable",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "acme-router",
+          "acme-cookie"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "package-lock.json",
+          "line": 23
+        }
+      ]
+    },
+    {
+      "name": "acme-fork",
+      "version": null,
+      "ecosystem": "npm",
+      "purl": "pkg:npm/acme-fork",
+      "direct": true,
+      "scope": "prod",
+      "status": "unresolved",
+      "unresolved_reason": "non-registry source",
+      "error": null,
+      "paths": [
+        [
+          "acme-fork"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "package-lock.json",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "name": "acme-qs",
+      "version": "5.1.0",
+      "ecosystem": "npm",
+      "purl": "pkg:npm/acme-qs@5.1.0",
+      "direct": false,
+      "scope": "dev",
+      "status": "vulnerable",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "acme-test",
+          "acme-qs"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "package-lock.json",
+          "line": 52
+        }
+      ]
+    },
+    {
+      "name": "acme-qs",
+      "version": "6.2.0",
+      "ecosystem": "npm",
+      "purl": "pkg:npm/acme-qs@6.2.0",
+      "direct": false,
+      "scope": "prod",
+      "status": "vulnerable",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "acme-router",
+          "acme-qs"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "package-lock.json",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "name": "acme-router",
+      "version": "4.1.2",
+      "ecosystem": "npm",
+      "purl": "pkg:npm/acme-router@4.1.2",
+      "direct": true,
+      "scope": "prod",
+      "status": "clean",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "acme-router"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "package-lock.json",
+          "line": 35
+        }
+      ]
+    },
+    {
+      "name": "acme-test",
+      "version": "2.3.0",
+      "ecosystem": "npm",
+      "purl": "pkg:npm/acme-test@2.3.0",
+      "direct": true,
+      "scope": "dev",
+      "status": "clean",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "acme-test"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "package-lock.json",
+          "line": 44
+        }
+      ]
+    },
+    {
+      "name": "left-pad-plus",
+      "version": "1.0.0",
+      "ecosystem": "npm",
+      "purl": "pkg:npm/left-pad-plus@1.0.0",
+      "direct": true,
+      "scope": "prod",
+      "status": "vulnerable",
+      "unresolved_reason": null,
+      "error": null,
+      "paths": [
+        [
+          "left-pad-plus"
+        ]
+      ],
+      "locations": [
+        {
+          "file": "package-lock.json",
+          "line": 57
+        }
+      ]
+    }
+  ],
+  "problems": []
+}

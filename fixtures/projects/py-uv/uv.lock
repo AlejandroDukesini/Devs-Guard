@@ -1,0 +1,54 @@
+version = 1
+revision = 2
+requires-python = ">=3.11"
+
+[[package]]
+name = "acme-crypto"
+version = "41.0.0"
+source = { registry = "https://pypi.org/simple" }
+
+[[package]]
+name = "acme-internal"
+version = "0.3.0"
+source = { git = "https://github.com/acme/internal?rev=main#0123456789abcdef0123456789abcdef01234567" }
+
+[[package]]
+name = "acme-lint"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+
+[[package]]
+name = "acme-templates"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "acme-markup" },
+]
+
+[[package]]
+name = "acme-markup"
+version = "2.1.5"
+source = { registry = "https://pypi.org/simple" }
+
+[[package]]
+name = "acme-web"
+version = "2.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "acme-templates" },
+]
+
+[[package]]
+name = "demo-api"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "acme-crypto" },
+    { name = "acme-internal" },
+    { name = "acme-web" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "acme-lint" },
+]

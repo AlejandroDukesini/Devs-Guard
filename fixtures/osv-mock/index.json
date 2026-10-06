@@ -1,0 +1,35 @@
+{
+  "modified": "2099-01-01T00:00:00Z",
+  "results": {
+    "npm|acme-qs|6.2.0": [
+      "GHSA-dmo1-qs62-0001",
+      "OSV-2099-0001"
+    ],
+    "npm|acme-qs|5.1.0": [
+      "GHSA-dmo1-qs62-0001",
+      "OSV-2099-0001"
+    ],
+    "npm|acme-cookie|0.5.0": [
+      "GHSA-dmo1-ck05-0002"
+    ],
+    "npm|left-pad-plus|1.0.0": [
+      "GHSA-dmo1-lp10-0003"
+    ],
+    "npm|@acme/logger|1.4.0": [
+      "GHSA-dmo1-lg14-0004"
+    ],
+    "PyPI|acme-templates|3.1.0": [
+      "PYSEC-2099-0005",
+      "GHSA-dmo1-tp31-0005"
+    ],
+    "PyPI|acme-crypto|41.0.0": [
+      "GHSA-dmo1-cr41-0006"
+    ],
+    "PyPI|acme-lint|1.0.0": [
+      "GHSA-dmo1-ln10-0007"
+    ],
+    "Maven|com.acme:acme-json|2.9.0": [
+      "GHSA-dmo1-js29-0008"
+    ]
+  }
+}

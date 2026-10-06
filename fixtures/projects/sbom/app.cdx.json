@@ -1,0 +1,49 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "component": { "type": "application", "bom-ref": "app", "name": "demo-java-service" }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.acme/acme-json@2.9.0",
+      "name": "acme-json",
+      "version": "2.9.0",
+      "purl": "pkg:maven/com.acme/acme-json@2.9.0",
+      "components": [
+        {
+          "type": "library",
+          "bom-ref": "pkg:maven/com.acme/acme-json-core@2.9.0",
+          "name": "acme-json-core",
+          "purl": "pkg:maven/com.acme/acme-json-core@2.9.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/acme/acme-net@v0.17.0",
+      "name": "acme-net",
+      "purl": "pkg:golang/github.com/acme/acme-net@v0.17.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40acme/logger@1.4.0",
+      "name": "logger",
+      "scope": "excluded",
+      "purl": "pkg:npm/%40acme/logger@1.4.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "deb-openssl",
+      "name": "openssl",
+      "purl": "pkg:deb/debian/openssl@3.0.11-1?arch=amd64&distro=debian-12"
+    },
+    { "type": "library", "bom-ref": "no-purl", "name": "mystery" }
+  ],
+  "dependencies": [
+    { "ref": "app", "dependsOn": ["pkg:maven/com.acme/acme-json@2.9.0", "pkg:golang/github.com/acme/acme-net@v0.17.0", "pkg:npm/%40acme/logger@1.4.0"] },
+    { "ref": "pkg:maven/com.acme/acme-json@2.9.0", "dependsOn": ["pkg:maven/com.acme/acme-json-core@2.9.0"] }
+  ]
+}

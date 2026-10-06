@@ -1,0 +1,59 @@
+{
+  "id": "GHSA-dmo1-qs62-0001",
+  "modified": "2099-01-01T00:00:00Z",
+  "published": "2099-01-01T00:00:00Z",
+  "aliases": [
+    "CVE-2099-1001"
+  ],
+  "summary": "acme-qs prototype pollution allows denial of service",
+  "details": "acme-qs prototype pollution allows denial of service",
+  "affected": [
+    {
+      "package": {
+        "ecosystem": "npm",
+        "name": "acme-qs"
+      },
+      "ranges": [
+        {
+          "type": "SEMVER",
+          "events": [
+            {
+              "introduced": "0"
+            },
+            {
+              "fixed": "5.1.2"
+            },
+            {
+              "introduced": "6.0.0"
+            },
+            {
+              "fixed": "6.2.4"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "type": "ADVISORY",
+      "url": "https://example.invalid/advisories/GHSA-dmo1-qs62-0001"
+    },
+    {
+      "type": "WEB",
+      "url": "http://insecure.example.invalid/ignored"
+    }
+  ],
+  "database_specific": {
+    "severity": "HIGH",
+    "cwe_ids": [
+      "CWE-1321"
+    ]
+  },
+  "severity": [
+    {
+      "type": "CVSS_V3",
+      "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+    }
+  ]
+}
