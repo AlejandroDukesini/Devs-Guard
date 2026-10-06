@@ -1,0 +1,60 @@
+name: DepGuard dependency scan
+description: Scan lockfiles/SBOMs for known vulnerabilities, prioritise them (CVSS + EPSS + CISA KEV) and enforce a policy.
+author: AlejandroDukesini
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  path:
+    description: Directory or file to scan.
+    default: "."
+  fail-on:
+    description: Lowest priority that fails the job (P0, P1, P2, P3 or none). Empty = use depguard.toml.
+    default: ""
+  config:
+    description: Path to a depguard.toml (default: depguard.toml in the scanned directory).
+    default: ""
+  sarif:
+    description: Write SARIF to this path (upload it with github/codeql-action/upload-sarif).
+    default: "depguard.sarif"
+  allow-incomplete:
+    description: "Do not fail when some dependencies could not be checked (exit 3)."
+    default: "false"
+
+outputs:
+  exit-code:
+    description: 0 pass, 1 policy failure, 2 tool error, 3 incomplete.
+    value: ${{ steps.scan.outputs.exit-code }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: "3.13"
+    - name: Install DepGuard from this action's source
+      shell: bash
+      run: python -m pip install --disable-pip-version-check -q "${GITHUB_ACTION_PATH}"
+    - name: Scan
+      id: scan
+      shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_SARIF: ${{ inputs.sarif }}
+        INPUT_ALLOW_INCOMPLETE: ${{ inputs.allow-incomplete }}
+      run: |
+        # Inputs are passed through env vars and arrays: never interpolated into the script.
+        args=(scan "$INPUT_PATH")
+        [ -n "$INPUT_FAIL_ON" ] && args+=(--fail-on "$INPUT_FAIL_ON")
+        [ -n "$INPUT_CONFIG" ] && args+=(--config "$INPUT_CONFIG")
+        [ "$INPUT_ALLOW_INCOMPLETE" = "true" ] && args+=(--allow-incomplete)
+        set +e
+        depguard "${args[@]}" --format sarif --output "$INPUT_SARIF" --quiet
+        code=$?
+        # Human-readable summary from the cache filled by the run above (no extra requests).
+        { echo '```'; depguard "${args[@]}" --offline --allow-incomplete --no-color 2>&1; echo '```'; } >> "$GITHUB_STEP_SUMMARY" || true
+        echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+        exit $code

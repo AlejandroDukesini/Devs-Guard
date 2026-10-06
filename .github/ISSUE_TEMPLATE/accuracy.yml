@@ -1,0 +1,34 @@
+name: False positive / false negative
+description: DepGuard reported a vulnerability that does not apply, or missed one that does.
+labels: [accuracy]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options: [False positive, False negative, Wrong fixed version, Wrong priority]
+    validations:
+      required: true
+  - type: input
+    id: package
+    attributes:
+      label: Package, version and ecosystem
+      placeholder: "requests 2.31.0 (PyPI)"
+    validations:
+      required: true
+  - type: input
+    id: advisory
+    attributes:
+      label: Advisory id(s)
+      placeholder: "CVE-…, GHSA-…"
+  - type: textarea
+    id: manifest
+    attributes:
+      label: Minimal manifest or lockfile excerpt
+      render: text
+  - type: textarea
+    id: why
+    attributes:
+      label: Why do you think the result is wrong?
+    validations:
+      required: true

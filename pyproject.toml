@@ -3,14 +3,14 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-name = "depguard"
+name = "devs-guard"
 dynamic = ["version"]
 description = "Dependency vulnerability scanner with explainable risk prioritization and auditable policies."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
-authors = [{ name = "Alejandro Dukesini" }]
+authors = [{ name = "AlejandroDukesini" }]
 keywords = ["security", "devsecops", "sca", "osv", "sbom", "cyclonedx", "sarif", "vulnerability"]
 classifiers = [
   "Development Status :: 4 - Beta",

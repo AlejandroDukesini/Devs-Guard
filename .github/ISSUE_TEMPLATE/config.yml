@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability in DepGuard
+    url: https://github.com/AlejandroDukesini/Devs-Guard/security/advisories/new
+    about: Please report security issues privately, not as public issues.
+  - name: Wrong or missing advisory data
+    url: https://github.com/google/osv.dev/issues
+    about: Advisory content comes from OSV.dev and the databases it aggregates.

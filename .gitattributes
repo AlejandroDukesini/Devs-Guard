@@ -1,0 +1,5 @@
+# Normalise line endings so fixtures, goldens and hashes are identical on every OS.
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.woff2 binary
