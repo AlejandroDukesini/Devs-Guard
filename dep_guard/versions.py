@@ -63,13 +63,37 @@ def compare_pep440(a: str, b: str) -> int | None:
         return None
 
 
+_SEGMENTS = re.compile(r"[.\-+_]")
+
+
+def compare_generic(a: str, b: str) -> int | None:
+    """Conservative ordering for ecosystems without a dedicated comparator.
+
+    Numeric segments are compared numerically ("2.14.1" > "2.12.2"). As soon
+    as two non-equal segments are not both numbers (Maven qualifiers such as
+    alpha/RC/RELEASE), the order is declared unknown instead of guessed.
+    """
+    ta = _SEGMENTS.split(a.strip().removeprefix("v"))
+    tb = _SEGMENTS.split(b.strip().removeprefix("v"))
+    for x, y in zip(ta, tb, strict=False):
+        if x == y:
+            continue
+        if x.isdigit() and y.isdigit():
+            return _cmp(int(x), int(y))
+        return None
+    rest, sign = (ta[len(tb) :], 1) if len(ta) > len(tb) else (tb[len(ta) :], -1)
+    if all(t.isdigit() for t in rest):
+        return sign if any(int(t) for t in rest) else 0
+    return None
+
+
 def compare(ecosystem: str, a: str, b: str) -> int | None:
     """Return -1/0/1, or None when the versions cannot be ordered reliably."""
     if ecosystem == "PyPI":
         return compare_pep440(a, b)
     if ecosystem == "npm":
         return compare_semver(a, b)
-    return None
+    return compare_generic(a, b)
 
 
 def is_semver(v: str) -> bool:
