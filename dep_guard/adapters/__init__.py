@@ -32,11 +32,13 @@ def adapter_for(filename: str, parent_dir: str = "") -> Adapter | None:
     return None
 
 
-def sniff_adapter(content: str) -> Adapter | None:
-    """For explicitly passed files with a non-standard name."""
+def sniff_adapter(content: str, filename: str = "") -> Adapter | None:
+    """For files passed explicitly with a non-standard name (e.g. `pip freeze > deps.txt`)."""
     head = content.lstrip()[:4096]
     if head.startswith("{") and '"bomFormat"' in content[:65536]:
         return CycloneDxAdapter()
+    if filename.lower().endswith(".txt"):
+        return RequirementsAdapter()
     return None
 
 

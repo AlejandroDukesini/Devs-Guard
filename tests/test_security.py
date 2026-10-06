@@ -42,7 +42,7 @@ def test_control_characters_and_bidi_are_stripped() -> None:
 
 
 @pytest.mark.skipif(
-    os.name == "nt" and not os.environ.get("CI"), reason="symlinks need privileges on Windows"
+    os.name == "nt", reason="creating symlinks needs privileges on Windows; covered on Linux CI"
 )
 def test_symlinks_are_not_followed(tmp_path: Path) -> None:
     outside = tmp_path / "outside"

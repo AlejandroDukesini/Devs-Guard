@@ -125,3 +125,4 @@ def test_adapter_selection_and_sniffing() -> None:
     assert adapter_for("README.md") is None
     assert sniff_adapter('{"bomFormat": "CycloneDX"}') is not None
     assert sniff_adapter("hello") is None
+    assert sniff_adapter("requests==2.0", "deps.txt") is not None  # explicit pip freeze output

@@ -99,7 +99,7 @@ def discover(
         adapter = adapter_for(root.name, root.parent.name)
         if adapter is None:
             try:
-                adapter = sniff_adapter(read_text(root))
+                adapter = sniff_adapter(read_text(root), root.name)
             except (OSError, DiscoveryError) as exc:
                 raise DiscoveryError(str(exc)) from None
         if adapter is None:
