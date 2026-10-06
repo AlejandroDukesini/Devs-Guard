@@ -1,0 +1,16 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "component": { "type": "application", "bom-ref": "billing-service", "name": "billing-service" }
+  },
+  "components": [
+    { "type": "library", "bom-ref": "log4j-core", "name": "log4j-core", "purl": "pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1" },
+    { "type": "library", "bom-ref": "log4j-api", "name": "log4j-api", "purl": "pkg:maven/org.apache.logging.log4j/log4j-api@2.14.1" },
+    { "type": "library", "bom-ref": "spring-beans", "name": "spring-beans", "purl": "pkg:maven/org.springframework/spring-beans@5.3.17" },
+    { "type": "library", "bom-ref": "jackson-databind", "name": "jackson-databind", "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.13.2" },
+    { "type": "library", "bom-ref": "commons-text", "name": "commons-text", "purl": "pkg:maven/org.apache.commons/commons-text@1.9" },
+    { "type": "library", "bom-ref": "junit", "name": "junit", "scope": "excluded", "purl": "pkg:maven/junit/junit@4.12" }
+  ]
+}
