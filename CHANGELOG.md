@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Public web demo (`web/`): the engine ported to JavaScript, running in the
+  browser (React + Vite + Tailwind, static hosting on Netlify), with live and
+  recorded-snapshot modes, policy editor, simulated outage, and JSON / SARIF /
+  CycloneDX downloads. Parity with the Python engine is enforced by the shared
+  goldens.
+- `scripts/check_text_safety.py`: CI fails on invisible/bidi characters.
+
+### Fixed
+- Fixed-version selection for ecosystems without a dedicated comparator
+  (Maven, Go, crates.io…, via SBOM): log4j-core 2.14.1 was advised to "upgrade"
+  to the 2.12.2 backport. A conservative numeric comparator now picks 2.15.0;
+  ambiguous qualifiers still yield "unknown order" instead of a guess.
+
 ## [1.0.0b1] - 2026-10-05
 
 First beta of the rebuilt scanner. **Breaking changes in behaviour** compared

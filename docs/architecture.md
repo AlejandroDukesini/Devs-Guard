@@ -48,4 +48,6 @@ discovery     adapters/       sources/       correlate     risk + policy
 ## Paridad con la demo web
 
 `web/src/core/` es un port en JavaScript del motor. Ambos se validan contra los
-mismos archivos de `fixtures/golden/`; si divergen, falla CI.
+mismos archivos de `fixtures/golden/`; si divergen, falla CI. Se eligió un port
+en lugar de ejecutar el Python original con Pyodide por el tiempo de carga
+(unos 10 MB y varios segundos de arranque). Detalles en [web/README.md](../web/README.md).

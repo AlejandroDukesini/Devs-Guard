@@ -15,7 +15,8 @@ el contexto de tu proyecto (producción o desarrollo, directa o transitiva), y
 aplica una política con un resultado determinista para CI:
 `PASS`, `FAIL` o `INCOMPLETE`.
 
-> 🌐 **Demo web:** pruébalo en el navegador sin instalar nada (carpeta [`web/`](web/), despliegue en Netlify).
+> 🌐 **Demo web:** pruébalo en el navegador sin instalar nada. El mismo motor, portado a JavaScript y verificado
+> contra los mismos casos de prueba, corre en tu pestaña con datos reales de OSV.dev. Código y despliegue en [`web/`](web/README.md).
 
 ```text
 $ depguard scan .
@@ -201,6 +202,8 @@ Lista completa: [docs/limitations.md](docs/limitations.md).
 pip install -e ".[dev]"
 ruff check dep_guard tests && mypy && bandit -q -c pyproject.toml -r dep_guard && pytest --cov
 ```
+
+Demo web: `cd web && npm ci --ignore-scripts && npm test && npm run dev` (ver [web/README.md](web/README.md)).
 
 Los tests no usan datos reales de vulnerabilidades: `fixtures/` contiene paquetes
 y CVE ficticios (`acme-*`, `CVE-2099-*`). Ver [CONTRIBUTING.md](CONTRIBUTING.md)
