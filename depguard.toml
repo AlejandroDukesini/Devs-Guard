@@ -2,8 +2,9 @@
 # Reference: docs/configuration.md
 
 [scan]
-# Test fixtures contain intentionally vulnerable *fictional* packages.
-exclude = ["fixtures/**", "tests/**"]
+# Test fixtures contain intentionally vulnerable *fictional* packages, and the
+# web demo ships intentionally outdated *sample* projects to scan.
+exclude = ["fixtures/**", "tests/**", "web/src/demo/samples/**"]
 
 [policy]
 fail_on_priority = "P1"

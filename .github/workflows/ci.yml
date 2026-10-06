@@ -36,6 +36,9 @@ jobs:
           cache-dependency-path: pyproject.toml
       - name: Install
         run: python -m pip install -e ".[dev]"
+      - name: No invisible / bidi characters in tracked files
+        if: matrix.os == 'ubuntu-latest'
+        run: python scripts/check_text_safety.py
       - name: Lint (ruff)
         run: |
           ruff check dep_guard tests
@@ -72,6 +75,8 @@ jobs:
       - name: Scan installed Python dependencies
         id: scan
         run: depguard scan installed-requirements.txt --format sarif --output depguard.sarif
+      - name: Scan the repository (web demo lockfile included)
+        run: depguard scan .
       - name: Human-readable summary
         if: always()
         run: depguard scan installed-requirements.txt --allow-incomplete || true
@@ -81,6 +86,34 @@ jobs:
         with:
           sarif_file: depguard.sarif
           category: depguard
+
+  web:
+    name: Web demo (lint, unit + parity, build, e2e)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install (no lifecycle scripts)
+        run: npm ci --ignore-scripts
+      - name: Lint
+        run: npm run lint
+      - name: Unit + parity tests (shared goldens with pytest)
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: E2E (Playwright, offline, under production CSP)
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e
 
   dependency-review:
     if: github.event_name == 'pull_request'
