@@ -17,7 +17,7 @@ Esquema estable (cambios incompatibles = nueva versión de esquema):
 ```jsonc
 {
   "schema": "depguard.report/v1",
-  "tool": {"name": "depguard", "version": "1.0.0b1"},
+  "tool": {"name": "depguard", "version": "1.0.0b2"},
   "generated_at": "2026-10-05T12:00:00+00:00",
   "verdict": "FAIL",              // PASS | FAIL | INCOMPLETE
   "exit_code": 1,

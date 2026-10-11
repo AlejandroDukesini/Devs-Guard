@@ -7,7 +7,7 @@ Library usage::
     print(report.policy.verdict, report.exit_code)
 """
 
-__version__ = "1.0.0b1"
+__version__ = "1.0.0b2"
 
 
 def scan(target, options=None):  # type: ignore[no-untyped-def]

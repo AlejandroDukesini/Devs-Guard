@@ -15,7 +15,7 @@ import { HttpClient } from './sources/http.js'
 import { OsvSource } from './sources/osv.js'
 import { fnmatch } from './discovery.js'
 
-export const ENGINE_VERSION = '1.0.0b1'
+export const ENGINE_VERSION = '1.0.0b2'
 export class ToolError extends Error {}
 
 const byStr = (a, b) => (a < b ? -1 : a > b ? 1 : 0)

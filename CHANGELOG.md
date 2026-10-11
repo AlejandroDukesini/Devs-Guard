@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0b2] - 2026-10-11
+
 ### Added
 - Public web demo (`web/`): the engine ported to JavaScript, running in the
   browser (React + Vite + Tailwind, static hosting on Netlify), with live and

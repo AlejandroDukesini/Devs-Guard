@@ -20,7 +20,7 @@ aplica una política con un resultado determinista para CI:
 
 ```text
 $ depguard scan .
-DepGuard 1.0.0b1
+DepGuard 1.0.0b2
 ✓ 1 archivo(s) analizados: requirements.txt
 ✓ 3 dependencias (3 directas) · 1 sin versión exacta
 ✓ OSV: ok   ✓ EPSS: ok   ✓ KEV: ok
