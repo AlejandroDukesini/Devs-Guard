@@ -9,36 +9,26 @@ export const SAMPLES = [
     id: 'express-shop',
     title: 'Tienda Express (npm)',
     format: 'package-lock.json',
-    blurb: 'Lockfile real con 178 paquetes. Muestra dependencias transitivas, rutas y prod frente a dev.',
-    expect: 'FAIL',
   },
   {
     id: 'flask-api',
     title: 'API Flask de 2021 (pip)',
     format: 'requirements.txt',
-    blurb: 'Versiones fijadas y una sin fijar: la herramienta dice qué no pudo comprobar.',
-    expect: 'FAIL',
   },
   {
     id: 'java-sbom',
     title: 'Servicio Java (SBOM)',
     format: 'CycloneDX',
-    blurb: 'Log4Shell y Spring4Shell: vulnerabilidades en CISA KEV que se convierten en P0.',
-    expect: 'FAIL',
   },
   {
     id: 'fastapi-clean',
     title: 'Servicio al día (pip)',
     format: 'requirements.txt',
-    blurb: 'Dependencias recientes: un PASS sólo cuando todo se pudo comprobar.',
-    expect: 'PASS',
   },
   {
     id: 'broken-lock',
     title: 'Lockfile con conflicto de merge',
     format: 'package-lock.json',
-    blurb: 'Archivo corrupto: el resultado es INCOMPLETE, nunca un falso "sin vulnerabilidades".',
-    expect: 'INCOMPLETE',
   },
 ]
 

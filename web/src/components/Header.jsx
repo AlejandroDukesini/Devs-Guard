@@ -6,8 +6,8 @@ import { REPO_URL } from '../links.js'
 const NAV = [
   ['#demo', 'Demo'],
   ['#como-funciona', 'Cómo funciona'],
-  ['#arquitectura', 'Arquitectura'],
-  ['#demo-vs-local', 'Demo vs CLI'],
+  ['#calidad', 'Calidad'],
+  ['#certificado', 'Certificado'],
 ]
 
 export default function Header() {
@@ -23,7 +23,6 @@ export default function Header() {
         <a href="#top" className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
           <ShieldIcon className="size-7" />
           <span>DepGuard</span>
-          <span className="chip bg-accent-50 text-accent-800 dark:bg-accent-800/30 dark:text-accent-100">demo</span>
         </a>
         <nav aria-label="Secciones" className="hidden items-center gap-1 md:flex">
           {NAV.map(([href, label]) => (
@@ -41,7 +40,7 @@ export default function Header() {
           >
             {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
           </button>
-          <a href={REPO_URL} className="btn-secondary px-3" target="_blank" rel="noopener noreferrer">
+          <a href={REPO_URL} className="btn-secondary px-3" target="_blank" rel="noopener noreferrer" aria-label="Código en GitHub">
             <GitHubIcon />
             <span className="hidden sm:inline">Código</span>
           </a>

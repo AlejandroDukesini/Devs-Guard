@@ -50,13 +50,9 @@ function Verdict({ report, meta }) {
       )}
       {report.policy.incomplete_reasons.map((r) => (
         <p key={r} className="mt-1 font-mono text-xs">
-          ? {r}
+          {r}
         </p>
       ))}
-      <p className="mt-3 rounded-md bg-black/5 px-2 py-1 font-mono text-xs dark:bg-white/5">
-        $ depguard scan .{meta.mode === 'snapshot' ? ' --offline' : ''}
-        <span className="text-slate-500"> # mismo motor, mismo veredicto → exit {report.exit_code}</span>
-      </p>
     </div>
   )
 }
@@ -91,9 +87,6 @@ function NotChecked({ components }) {
       <h3 className="flex items-center gap-2 font-medium text-amber-800 dark:text-amber-300">
         <AlertIcon /> Lo que no se pudo comprobar
       </h3>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Estas dependencias no tienen veredicto. Un escáner que las mostrara como "seguras" estaría mintiendo.
-      </p>
       {groups.map(([status, list]) => (
         <div key={status} className="mt-3">
           <p className="label">
@@ -136,10 +129,6 @@ export default function Results({ phase, report, error, steps, meta, projectName
     return (
       <div className="card flex min-h-80 flex-col items-center justify-center gap-3 p-8 text-center">
         <p className="font-medium text-slate-900 dark:text-white">Elige un ejemplo y pulsa «Escanear»</p>
-        <p className="max-w-md text-sm text-slate-600 dark:text-slate-400">
-          Verás el veredicto de la política, cada vulnerabilidad con su prioridad y el porqué, la remediación sugerida y lo
-          que no se pudo comprobar. Puedes descargar el informe en JSON, SARIF o CycloneDX.
-        </p>
       </div>
     )
   }
@@ -157,10 +146,6 @@ export default function Results({ phase, report, error, steps, meta, projectName
           Error de la herramienta <span className="font-mono font-normal">exit {error.exitCode}</span>
         </p>
         <p className="mt-1 font-mono text-sm break-words">{error.message}</p>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-          Igual que la CLI: un archivo no soportado o una configuración inválida detienen el escaneo en vez de dar un
-          resultado engañoso.
-        </p>
       </div>
     )
   }
@@ -233,7 +218,6 @@ export default function Results({ phase, report, error, steps, meta, projectName
       {remediation.length > 0 && (
         <section className="card p-4">
           <h3 className="font-medium text-slate-900 dark:text-white">Remediación sugerida</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400">La actualización mínima por paquete que corrige sus hallazgos.</p>
           <ul className="mt-2 space-y-1 text-sm">
             {remediation.slice(0, 15).map((r) => (
               <li key={`${r.package}@${r.current}`} className="flex flex-wrap items-baseline gap-x-2">
@@ -268,7 +252,7 @@ export default function Results({ phase, report, error, steps, meta, projectName
       )}
 
       <section className="card flex flex-wrap items-center gap-2 p-4">
-        <span className="mr-auto text-sm text-slate-600 dark:text-slate-400">Descargar el informe (se genera en tu navegador)</span>
+        <span className="mr-auto text-sm text-slate-600 dark:text-slate-400">Descargar</span>
         {EXPORTS.map((e) => (
           <button
             key={e.id}

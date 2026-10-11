@@ -1,44 +1,22 @@
-import { GitHubIcon } from './Icons.jsx'
-import { REPO_URL, doc } from '../links.js'
-
-const POINTS = [
-  ['Lockfiles y SBOM', 'npm, Poetry, uv, pip y CycloneDX, con dependencias transitivas.'],
-  ['Prioridad explicable', 'CVSS + EPSS + CISA KEV + contexto: P0–P3 y el porqué.'],
-  ['Resultado honesto', '"No se pudo comprobar" nunca se convierte en "sin vulnerabilidades".'],
-]
-
+// Photo: padlock on a keyboard, by FlyD on Unsplash (Unsplash License),
+// stored locally in public/ so the CSP (img-src 'self') still holds.
 export default function Hero() {
   return (
-    <section id="top" className="border-b border-slate-200 dark:border-slate-800">
-      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-        <p className="label text-accent-700 dark:text-accent-500">Escáner de dependencias · DevSecOps</p>
-        <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight text-balance text-slate-900 sm:text-5xl dark:text-white">
-          Qué vulnerabilidades corregir primero, y por qué.
-        </h1>
-        <p className="mt-5 max-w-2xl text-lg text-pretty text-slate-600 dark:text-slate-400">
-          DepGuard lee tus lockfiles, consulta OSV.dev y prioriza cada vulnerabilidad con datos de explotación real. Esta
-          demo ejecuta el mismo motor en tu navegador: los archivos no salen de tu equipo.
+    <section id="top" className="grid bg-black md:min-h-[32rem] md:grid-cols-2">
+      <div className="flex flex-col justify-center px-6 py-16 sm:px-12 lg:px-16">
+        <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-6xl">DepGuard</h1>
+        <p className="mt-5 max-w-md text-lg text-pretty text-slate-300">
+          Escáner de dependencias que detecta vulnerabilidades conocidas y prioriza cuáles corregir primero.
         </p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <a href="#demo" className="btn-primary px-5 py-2.5">
-            Probar la demo
-          </a>
-          <a href={REPO_URL} className="btn-secondary px-5 py-2.5" target="_blank" rel="noopener noreferrer">
-            <GitHubIcon /> Ver código
-          </a>
-          <a href={doc('README.md')} className="btn-ghost px-3 py-2.5" target="_blank" rel="noopener noreferrer">
-            Documentación →
-          </a>
-        </div>
-        <dl className="mt-12 grid gap-6 sm:grid-cols-3">
-          {POINTS.map(([title, text]) => (
-            <div key={title} className="border-l-2 border-accent-600 pl-4">
-              <dt className="font-medium text-slate-900 dark:text-white">{title}</dt>
-              <dd className="mt-1 text-sm text-slate-600 dark:text-slate-400">{text}</dd>
-            </div>
-          ))}
-        </dl>
       </div>
+      <img
+        src="/hero-security.webp"
+        alt="Candado metálico sobre un teclado iluminado"
+        width="1200"
+        height="1200"
+        fetchPriority="high"
+        className="h-64 w-full object-cover sm:h-80 md:h-full"
+      />
     </section>
   )
 }

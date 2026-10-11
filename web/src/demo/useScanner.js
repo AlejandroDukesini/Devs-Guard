@@ -8,8 +8,8 @@ import { ToolError, scan } from '../core/engine.js'
 import { Cache } from '../core/sources/cache.js'
 
 export const MODES = {
-  live: { label: 'En vivo', hint: 'Consulta OSV.dev, FIRST EPSS y CISA KEV ahora mismo.' },
-  snapshot: { label: 'Instantánea', hint: 'Respuestas reales grabadas: sin red, solo para los ejemplos.' },
+  live: { label: 'En vivo' },
+  snapshot: { label: 'Instantánea' },
 }
 
 let snapshotPromise = null

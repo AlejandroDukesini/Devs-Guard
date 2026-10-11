@@ -6,11 +6,6 @@ import { DEFAULT_CONFIG } from '../demo/labels.js'
 import { ChevronIcon, Spinner, UploadIcon } from './Icons.jsx'
 
 const PASTE_NAMES = ['requirements.txt', 'package-lock.json', 'package.json', 'poetry.lock', 'uv.lock', 'bom.cdx.json']
-const EXPECT_STYLE = {
-  PASS: 'text-emerald-700 dark:text-emerald-400',
-  FAIL: 'text-red-700 dark:text-red-400',
-  INCOMPLETE: 'text-amber-700 dark:text-amber-400',
-}
 
 function Segmented({ value, onChange, options, label }) {
   return (
@@ -98,8 +93,6 @@ export default function ScanPanel({ scanning, onScan, onReset, state, setState }
                 <span className="font-medium text-slate-900 dark:text-white">{s.title}</span>
                 <span className="shrink-0 font-mono text-xs text-slate-500">{s.format}</span>
               </span>
-              <span className="mt-1 block text-sm text-slate-600 dark:text-slate-400">{s.blurb}</span>
-              <span className={`mt-1 block font-mono text-xs ${EXPECT_STYLE[s.expect]}`}>esperado: {s.expect}</span>
             </label>
           ))}
         </fieldset>
@@ -138,7 +131,7 @@ export default function ScanPanel({ scanning, onScan, onReset, state, setState }
           {userFiles.length > 0 && (
             <ul className="space-y-1 font-mono text-xs text-slate-600 dark:text-slate-400" aria-label="Archivos seleccionados">
               {userFiles.map((f) => (
-                <li key={f.path}>✓ {f.path}</li>
+                <li key={f.path}>{f.path}</li>
               ))}
             </ul>
           )}
@@ -177,10 +170,6 @@ export default function ScanPanel({ scanning, onScan, onReset, state, setState }
             placeholder={'flask==2.2.2\nrequests==2.20.0'}
             className="w-full rounded-lg border border-slate-300 bg-white p-2 font-mono text-xs dark:border-slate-700 dark:bg-slate-950"
           />
-          <p className="text-xs text-slate-500">
-            Se procesa en tu navegador. Solo el ecosistema, el nombre y la versión de cada paquete se envían a OSV.dev; los
-            CVE, a FIRST.
-          </p>
         </div>
       )}
 
@@ -192,7 +181,6 @@ export default function ScanPanel({ scanning, onScan, onReset, state, setState }
           onChange={(v) => set({ mode: v })}
           options={Object.entries(MODES).map(([id, m]) => [id, m.label])}
         />
-        <p className="mt-2 text-xs text-slate-500">{MODES[mode].hint}</p>
       </div>
 
       <div>
@@ -206,8 +194,8 @@ export default function ScanPanel({ scanning, onScan, onReset, state, setState }
         </button>
         {showAdvanced && (
           <div className="mt-3 flex flex-col gap-3">
-            <label htmlFor={ids.config} className="text-sm text-slate-600 dark:text-slate-400">
-              <code className="font-mono">depguard.toml</code> (misma validación estricta que la CLI)
+            <label htmlFor={ids.config} className="font-mono text-sm text-slate-600 dark:text-slate-400">
+              depguard.toml
             </label>
             <textarea
               id={ids.config}
@@ -231,10 +219,7 @@ export default function ScanPanel({ scanning, onScan, onReset, state, setState }
                 className="mt-1 accent-accent-700"
                 disabled={mode === 'snapshot'}
               />
-              <span>
-                <strong className="font-medium">Simular caída de OSV.dev</strong> (respuestas 503). Sirve para ver que el
-                resultado es INCOMPLETE y no un falso PASS.
-              </span>
+              <span>Simular caída de OSV.dev</span>
             </label>
           </div>
         )}

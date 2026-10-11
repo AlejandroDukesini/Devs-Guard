@@ -14,9 +14,13 @@ async function scanSample(page, title) {
   await page.getByRole('button', { name: 'Escanear' }).click()
 }
 
-test('landing explains what it is and links to the code', async ({ page }) => {
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Qué vulnerabilidades corregir primero')
-  await expect(page.getByRole('link', { name: /Ver código/ })).toHaveAttribute('href', /github\.com\/AlejandroDukesini\/Devs-Guard/)
+test('landing: title, short description, local hero image and link to the code', async ({ page }) => {
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('DepGuard')
+  const hero = page.getByRole('img', { name: /Candado/ })
+  await expect(hero).toBeVisible()
+  // Served from our own origin, so it loads under img-src 'self'.
+  expect(await hero.evaluate((img) => img.complete && img.naturalWidth > 0)).toBe(true)
+  await expect(page.getByRole('link', { name: 'Código en GitHub' })).toHaveAttribute('href', /github\.com\/AlejandroDukesini\/Devs-Guard/)
 })
 
 test('Java SBOM: KEV findings become P0 and the policy fails', async ({ page }) => {
@@ -67,5 +71,5 @@ test('exports and reset', async ({ page }) => {
   expect((await download).suggestedFilename()).toBe('depguard.sarif')
   await page.getByRole('button', { name: 'Nuevo escaneo' }).click()
   await expect(page.getByText('Elige un ejemplo y pulsa «Escanear»')).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Demo interactiva' })).toBeInViewport()
+  await expect(page.getByRole('heading', { name: 'Demo', exact: true })).toBeInViewport()
 })
