@@ -1,0 +1,260 @@
+/* Liquid Metal Hero (src/components/Hero.jsx, src/hero/*).
+   --mx/--my: smoothed pointer in px; --px/--py: the same in -1..1. Both are
+   written by useHeroScene; layers move by different amounts (parallax). */
+
+.hero {
+  --mx: 62%;
+  --my: 42%;
+  --px: 0;
+  --py: 0;
+  background: #03040a;
+  color: #fff;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.hero-depth {
+  position: absolute;
+  inset: -4%;
+  will-change: transform;
+}
+.hero-depth-1 { transform: translate3d(calc(var(--px) * -10px), calc(var(--py) * -8px), 0); }
+.hero-depth-2 { transform: translate3d(calc(var(--px) * -22px), calc(var(--py) * -14px), 0); }
+.hero-depth-3 { transform: translate3d(calc(var(--px) * -34px), calc(var(--py) * -20px), 0); }
+.hero-depth-4 { inset: 0; transform: translate3d(calc(var(--px) * 14px), calc(var(--py) * 10px), 0); }
+
+.hero-aurora {
+  position: absolute;
+  border-radius: 9999px;
+  will-change: transform;
+}
+.hero-aurora-a {
+  width: 70vmax;
+  height: 70vmax;
+  left: 38%;
+  top: -35%;
+  background: radial-gradient(closest-side, rgb(37 99 235 / 0.34), rgb(37 99 235 / 0.08) 55%, transparent);
+  animation: hero-drift-a 23s ease-in-out infinite alternate;
+}
+.hero-aurora-b {
+  width: 60vmax;
+  height: 60vmax;
+  left: 52%;
+  top: 25%;
+  background: radial-gradient(closest-side, rgb(124 58 237 / 0.3), rgb(124 58 237 / 0.07) 55%, transparent);
+  animation: hero-drift-b 31s ease-in-out infinite alternate;
+}
+/* The bridge between text and sphere: a cyan-to-violet band of light. */
+.hero-aurora-c {
+  width: 70vw;
+  height: 34vmax;
+  left: 18%;
+  top: 34%;
+  background: radial-gradient(closest-side, rgb(34 211 238 / 0.16), rgb(99 102 241 / 0.1) 50%, transparent);
+  animation: hero-drift-c 17s ease-in-out infinite alternate;
+}
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(148 163 184 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(148 163 184 / 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 65% 60% at 60% 50%, #000 20%, transparent 75%);
+}
+.hero-lines {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.75;
+}
+.hero-line {
+  fill: none;
+  stroke: url(#hero-line);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 260 1100;
+}
+.hero-line-1 { animation: hero-dash 11s linear infinite; }
+.hero-line-2 { animation: hero-dash 16s linear -5s infinite; opacity: 0.7; }
+.hero-line-3 { animation: hero-dash 21s linear -12s infinite; opacity: 0.5; }
+.hero-particles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.hero-halo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 560px;
+  height: 560px;
+  border-radius: 9999px;
+  transform: translate3d(calc(var(--mx) - 280px), calc(var(--my) - 280px), 0);
+  background:
+    radial-gradient(closest-side, rgb(186 230 253 / 0.16), transparent 30%),
+    radial-gradient(closest-side, rgb(59 130 246 / 0.18), rgb(139 92 246 / 0.1) 50%, transparent);
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+.hero-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Sphere: WebGL canvas, or the CSS fallback when data-webgl="off". */
+.hero-float {
+  animation: hero-float 9s ease-in-out infinite;
+  will-change: transform;
+}
+.hero-sphere {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.hero-sphere-shadow {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 2%;
+  height: 10%;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, rgb(59 130 246 / 0.35), rgb(124 58 237 / 0.12) 60%, transparent);
+  animation: hero-shadow 9s ease-in-out infinite;
+}
+.hero-sphere-fallback {
+  display: none;
+  position: absolute;
+  inset: 16%;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 32% 28%, #fff 0, rgb(226 232 240 / 0.9) 6%, transparent 22%),
+    radial-gradient(circle at 70% 75%, rgb(34 211 238 / 0.55), transparent 40%),
+    radial-gradient(circle at 25% 80%, rgb(139 92 246 / 0.6), transparent 45%),
+    radial-gradient(circle at 50% 50%, #cbd5e1 0, #64748b 45%, #1e293b 75%, #0b1020 100%);
+  box-shadow: 0 0 80px rgb(59 130 246 / 0.35), inset -20px -30px 60px rgb(2 6 23 / 0.8);
+}
+.hero[data-webgl="off"] .hero-sphere { display: none; }
+.hero[data-webgl="off"] .hero-sphere-fallback { display: block; }
+
+/* Typography */
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(148 163 184 / 0.25);
+  background: linear-gradient(90deg, rgb(59 130 246 / 0.14), rgb(139 92 246 / 0.12));
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #cbd5e1;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+.hero-tag-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: #22d3ee;
+  box-shadow: 0 0 10px #22d3ee;
+  animation: hero-pulse 2.8s ease-in-out infinite;
+}
+.hero-metal {
+  background-image: linear-gradient(100deg, #f8fafc 0%, #cbd5e1 22%, #ffffff 38%, #93c5fd 52%, #c4b5fd 64%, #e2e8f0 80%, #f8fafc 100%);
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: hero-sheen 12s ease-in-out infinite alternate;
+}
+.hero-cta-primary,
+.hero-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.75rem;
+  padding: 0.7rem 1.3rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+}
+.hero-cta-primary {
+  color: #0b1020;
+  background: linear-gradient(100deg, #e2e8f0, #ffffff 45%, #bfdbfe);
+  box-shadow: 0 8px 30px rgb(59 130 246 / 0.25);
+}
+.hero-cta-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 40px rgb(99 102 241 / 0.4);
+}
+.hero-cta-secondary {
+  color: #e2e8f0;
+  border: 1px solid rgb(148 163 184 / 0.35);
+  background: rgb(15 23 42 / 0.4);
+}
+.hero-cta-secondary:hover {
+  border-color: rgb(167 139 250 / 0.7);
+  background: rgb(30 41 59 / 0.55);
+}
+
+/* Staggered entrance */
+.hero-in { animation: hero-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.hero-in-1 { animation-delay: 0.05s; }
+.hero-in-2 { animation-delay: 0.18s; }
+.hero-in-3 { animation-delay: 0.32s; }
+.hero-in-4 { animation-delay: 0.46s; }
+
+@keyframes hero-in {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes hero-drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(-8%, 10%, 0) scale(1.12); }
+}
+@keyframes hero-drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.05); }
+  to { transform: translate3d(-14%, -8%, 0) scale(0.92); }
+}
+@keyframes hero-drift-c {
+  from { transform: translate3d(-4%, 0, 0) rotate(-6deg) scaleX(0.95); }
+  to { transform: translate3d(5%, -4%, 0) rotate(4deg) scaleX(1.08); }
+}
+@keyframes hero-dash {
+  from { stroke-dashoffset: 1360; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes hero-float {
+  0%, 100% { transform: translate3d(0, -1.5%, 0); }
+  50% { transform: translate3d(0, 1.5%, 0); }
+}
+@keyframes hero-shadow {
+  0%, 100% { transform: scaleX(0.92); opacity: 0.7; }
+  50% { transform: scaleX(1.05); opacity: 1; }
+}
+@keyframes hero-sheen {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+@keyframes hero-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+/* Reduced motion: no loops at all (the global rule would only speed them up). */
+@media (prefers-reduced-motion: reduce) {
+  .hero * {
+    animation: none !important;
+  }
+}

@@ -20,6 +20,14 @@ All notable changes to this project are documented here. The format follows
   fingerprint of the evaluated code (docs/quality.md).
 
 ### Changed
+- Liquid Metal Hero: procedural WebGL liquid-metal sphere (no 3D library),
+  pointer-reactive aurora, halo, particles and light lines, staggered entrance,
+  parallax layers, CSS fallback, reduced-motion still frame and adaptive
+  resolution. Replaces the hero photo.
+- Quality certificate: tests that cannot apply to the environment (served
+  production headers on the dev server) are "No aplica" and no longer block
+  the result, which made the certificate look stuck at "Evidencia insuficiente"
+  in development. Reports move to depguard.quality/v2 (v1 still verifies).
 - Web demo redesigned with far less text: a black hero with only the name and
   a one-line description next to a photo, and no Architecture or Demo vs CLI
   sections (those are covered in the docs).

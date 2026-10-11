@@ -38,8 +38,10 @@ Navegador
 La página puede ejecutar 46 pruebas reales del motor y emitir un certificado
 de pruebas internas ligado a esa ejecución. Ver [docs/quality.md](../docs/quality.md).
 
-La imagen de portada (`public/hero-security.webp`) es de FlyD en Unsplash
-(licencia Unsplash) y se sirve desde el propio sitio por la CSP `img-src 'self'`.
+La portada (Liquid Metal Hero) es procedural: la esfera es un shader WebGL
+propio (`src/hero/sphereRenderer.js`, sin librerías 3D), con fondo reactivo al
+cursor, alternativa en CSS sin WebGL, imagen fija con `prefers-reduced-motion` y
+resolución adaptativa si la GPU no llega a ~40 fps.
 
 ## Ejecutar en local
 

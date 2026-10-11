@@ -14,13 +14,23 @@ async function scanSample(page, title) {
   await page.getByRole('button', { name: 'Escanear' }).click()
 }
 
-test('landing: title, short description, local hero image and link to the code', async ({ page }) => {
+test('landing: liquid metal hero renders without errors and links to the code', async ({ page }) => {
+  const errors = []
+  page.on('pageerror', (e) => errors.push(e.message))
+  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
+  await page.reload()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('DepGuard')
-  const hero = page.getByRole('img', { name: /Candado/ })
-  await expect(hero).toBeVisible()
-  // Served from our own origin, so it loads under img-src 'self'.
-  expect(await hero.evaluate((img) => img.complete && img.naturalWidth > 0)).toBe(true)
+  // WebGL sphere, or the CSS fallback: never an empty hero.
+  await expect(page.locator('#top')).toHaveAttribute('data-webgl', /^(on|off)$/)
+  await expect(page.getByRole('link', { name: 'Probar la demo' })).toHaveAttribute('href', '#demo')
   await expect(page.getByRole('link', { name: 'Código en GitHub' })).toHaveAttribute('href', /github\.com\/AlejandroDukesini\/Devs-Guard/)
+  // The pointer moves the light without blocking the call-to-action links.
+  const box = await page.locator('#top').boundingBox()
+  await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.5)
+  await page.getByRole('link', { name: 'Ver certificado' }).click()
+  await expect(page).toHaveURL(/#certificado$/)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  expect(errors).toEqual([])
 })
 
 test('Java SBOM: KEV findings become P0 and the policy fails', async ({ page }) => {

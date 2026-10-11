@@ -32,7 +32,7 @@ export function HowItWorks() {
         </ol>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[3fr_2fr]">
-          <table className="card w-full overflow-hidden text-sm">
+          <table className="card w-full min-w-0 overflow-hidden text-sm">
             <caption className="sr-only">Prioridades</caption>
             <tbody>
               {RULES.map(([p, rule]) => (
@@ -45,7 +45,7 @@ export function HowItWorks() {
               ))}
             </tbody>
           </table>
-          <div className="flex flex-col gap-3">
+          <div className="flex min-w-0 flex-col gap-3">
             <ul className="grid grid-cols-2 gap-2">
               {EXIT_CODES.map(([code, verdict]) => (
                 <li key={code} className="card p-3 font-mono text-sm">
