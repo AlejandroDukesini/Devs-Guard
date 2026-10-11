@@ -43,11 +43,15 @@ Cada resultado registra: id, nombre, descripción, categoría, severidad, estado
 la recomendación. Una prueba que termina sin evidencia cuenta como `error`. Las
 evidencias se limpian: se eliminan los caracteres de control y las rutas locales.
 
-Dos pruebas dependen del entorno y se marcan `skipped` (nunca `passed`) cuando no
-se pueden ejecutar:
+Dos pruebas dependen del entorno y nunca se marcan `passed` si no se ejecutan:
 
-- **DEP-004**: necesita red para consultar OSV.dev.
-- **FUN-006**: necesita la build de producción servida (`vite preview` o Netlify).
+- **FUN-006** (cabeceras servidas) declara `requires: ['browser', 'production']`. En
+  `npm run dev` o en vitest **no aplica**: el servidor de desarrollo no envía las
+  cabeceras de producción. Se registra como omitida con `out_of_scope: true`, se
+  muestra como «No aplica» y no bloquea el certificado (el motivo aparece en él).
+  Su origen (`netlify.toml` = `security-headers.js`) se comprueba siempre en REG-006.
+- **DEP-004** (OSV en vivo) necesita red. Si no hay, es **falta de evidencia**:
+  queda omitida y el certificado indica «Evidencia insuficiente» con el motivo.
 
 ## Fórmulas
 
@@ -60,9 +64,9 @@ se pueden ejecutar:
 |---|---|
 | No evaluado | No hay ejecución |
 | No aprobado | Hay alguna prueba fallida, crítica o no |
-| Evidencia insuficiente | Hay omitidas, errores de ejecución, una suite incompleta o una versión desconocida |
+| Evidencia insuficiente | Hay pruebas aplicables sin ejecutar, errores de ejecución, una suite incompleta o una versión desconocida |
 | Corresponde a una versión anterior | Todo pasó, pero el código servido ya no es el evaluado |
-| Pruebas internas superadas | Las 46 pruebas se ejecutaron y pasaron sobre esta misma build |
+| Evaluado: pruebas de seguridad superadas | Todas las pruebas aplicables al entorno se ejecutaron y pasaron sobre esta misma build |
 
 - **Identificador**: `DG-QC-` seguido de los 16 primeros hexadecimales del SHA-256 del informe.
 - **SHA-256 del informe**: se calcula sobre el JSON canónico (claves ordenadas) de todo

@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest'
 import { runQuality, SUITE_SIZE } from '../src/quality/execute.js'
 import { SUITE } from '../src/quality/registry.js'
 import { RunInProgressError, STATUS, check, runSuite, sanitize, skip } from '../src/quality/runner.js'
-import { buildReport, canonicalJson, summarize, verifyReport } from '../src/quality/report.js'
+import { buildReport, canonicalJson, sha256Hex, summarize, verifyReport } from '../src/quality/report.js'
 import { CERT_STATUS, evaluateCertificate } from '../src/quality/certificate.js'
 import { HISTORY_KEY, MAX_RUNS, loadHistory, memoryStorage, saveRun } from '../src/quality/history.js'
 
@@ -30,8 +30,11 @@ describe('quality suite on the current code', () => {
     expect(report.summary.total).toBe(SUITE_SIZE)
     expect(report.results.every((r) => r.evidence.length > 0 && r.started_at && r.duration_ms >= 0)).toBe(true)
     expect((await verifyReport(report)).valid).toBe(true)
-    // Skipped tests mean the certificate cannot claim approval.
-    expect(evaluateCertificate(report, report.build).status).toBe(CERT_STATUS.INSUFFICIENT)
+    // FUN-006 does not apply outside the published build; DEP-004 lacked the network: missing evidence.
+    expect(report.results.filter((r) => r.out_of_scope).map((r) => r.id)).toEqual(['FUN-006'])
+    const cert = evaluateCertificate(report, report.build)
+    expect(cert.status).toBe(CERT_STATUS.INSUFFICIENT)
+    expect(cert.reasons.join(' ')).toContain('DEP-004')
   }, 60_000)
 
   it('covers every category with documented, unique tests', () => {
@@ -124,6 +127,29 @@ describe('certificate rules', () => {
     expect(evaluateCertificate(await sealed([result('A-001', 'passed')], { suiteSize: 2 }), BUILD).status).toBe(
       CERT_STATUS.INSUFFICIENT,
     )
+  })
+
+  it('a test that does not apply to the environment does not block approval, and says so', async () => {
+    const outOfScope = { ...result('A-002', 'skipped'), out_of_scope: true }
+    const cert = evaluateCertificate(await sealed([result('A-001', 'passed'), outOfScope]), BUILD)
+    expect(cert.status).toBe(CERT_STATUS.APPROVED)
+    expect(cert.reasons.join(' ')).toContain('No aplica en este entorno: A-002')
+  })
+
+  it('runner marks unmet environment requirements as out of scope without running the test', async () => {
+    let ran = false
+    const [r] = await runSuite([def('TST-001', () => ((ran = true), 'ok'), { requires: ['production'] })], { context: { production: false } })
+    expect(ran).toBe(false)
+    expect(r).toMatchObject({ status: 'skipped', out_of_scope: true })
+  })
+
+  it('reports sealed with the previous schema still verify', async () => {
+    const legacy = { ...(await sealed([result('A-001', 'passed')])), schema: 'depguard.quality/v1' }
+    const { out_of_scope: _drop, ...summary } = legacy.summary
+    const body = { ...legacy, summary }
+    delete body.sha256
+    const v1 = { ...body, sha256: await sha256Hex(canonicalJson(body)) }
+    expect((await verifyReport(v1)).valid).toBe(true)
   })
 
   it('code changed since the run: outdated; unknown build: insufficient', async () => {

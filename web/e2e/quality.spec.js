@@ -32,7 +32,7 @@ test('a real run in the browser: results, certificate and report agree', async (
   // The network is blocked, so the live dependency check (DEP-004) cannot run:
   // it must be "skipped" and the certificate must not claim approval.
   await expect(certificate(page).getByTestId('cert-status')).toHaveText('Evidencia insuficiente')
-  await expect(certificate(page)).toContainText('1 prueba(s) omitida(s)')
+  await expect(certificate(page)).toContainText('Sin evidencia: DEP-004')
 
   // Download the full report and check it against what the page shows.
   const download = page.waitForEvent('download')

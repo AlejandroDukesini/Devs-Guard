@@ -13,6 +13,14 @@ const MAX_EVIDENCE_LINES = 12
 const MAX_EVIDENCE_CHARS = 300
 const ID_PATTERN = /^[A-Z]{3,4}-\d{3}$/
 
+// Environment requirements a test may declare (`requires: ['production']`).
+// A test whose requirement is not met is not executed: it is recorded as
+// skipped with out_of_scope = true, so it is visible but not run.
+export const REQUIREMENTS = {
+  browser: { label: 'un navegador', met: (ctx) => ctx.env === 'browser' },
+  production: { label: 'la build de producción publicada', met: (ctx) => Boolean(ctx.production) },
+}
+
 export class AssertionFailure extends Error {}
 export class SkipTest extends Error {}
 export class RunInProgressError extends Error {}
@@ -47,6 +55,7 @@ export function validateSuite(tests) {
     seen.add(t.id)
     if (!CATEGORIES.includes(t.category)) throw new Error(`${t.id}: unknown category ${t.category}`)
     if (!SEVERITIES.includes(t.severity)) throw new Error(`${t.id}: unknown severity ${t.severity}`)
+    for (const r of t.requires ?? []) if (!REQUIREMENTS[r]) throw new Error(`${t.id}: unknown requirement ${r}`)
     if (typeof t.run !== 'function' || !t.name || !t.description || !t.recommendation)
       throw new Error(`${t.id}: incomplete definition`)
   }
@@ -83,7 +92,9 @@ export async function runSuite(tests, { context = {}, onProgress = () => {}, clo
       const t0 = clock()
       let status
       let evidence
+      const unmet = (test.requires ?? []).filter((r) => !REQUIREMENTS[r].met(context))
       try {
+        if (unmet.length) skip(`No aplica en este entorno: requiere ${unmet.map((r) => REQUIREMENTS[r].label).join(' y ')}.`)
         evidence = await withTimeout(Promise.resolve().then(() => test.run(context)), test.timeoutMs ?? DEFAULT_TIMEOUT_MS)
         // No evidence, no pass.
         if (!normaliseEvidence(evidence).length) throw new Error('la prueba terminó sin aportar evidencia')
@@ -104,6 +115,7 @@ export async function runSuite(tests, { context = {}, onProgress = () => {}, clo
         duration_ms: Math.round((clock() - t0) * 10) / 10,
         evidence: normaliseEvidence(evidence),
         recommendation: failedOrError ? test.recommendation : null,
+        out_of_scope: unmet.length > 0,
       })
     }
     onProgress({ done: tests.length, total: tests.length, current: null })

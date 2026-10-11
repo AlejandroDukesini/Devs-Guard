@@ -349,8 +349,9 @@ const functional = [
     category: 'functional',
     severity: 'high',
     recommendation: 'Comprobar que netlify.toml (o el servidor) aplica security-headers.js a todas las rutas.',
+    // The dev server never sends production headers; REG-006 covers their source.
+    requires: ['browser', 'production'],
     async run(ctx) {
-      if (ctx.env !== 'browser' || !ctx.production) skip('solo verificable en la build de producción servida')
       const res = await fetch(`${ctx.origin}/`, { cache: 'no-store' })
       const missing = Object.entries(SECURITY_HEADERS).filter(([k, v]) => res.headers.get(k) !== v)
       check(!missing.length, `cabeceras ausentes o distintas: ${missing.map(([k]) => k).join(', ')}`)

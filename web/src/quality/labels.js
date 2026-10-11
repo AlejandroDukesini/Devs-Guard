@@ -25,7 +25,7 @@ export const SEVERITY_LABEL = { critical: 'Crítica', high: 'Alta', medium: 'Med
 
 export const CERT_META = {
   [CERT_STATUS.APPROVED]: {
-    title: 'Pruebas internas superadas',
+    title: 'Evaluado: pruebas de seguridad superadas',
     style: 'border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200',
   },
   [CERT_STATUS.NOT_APPROVED]: {

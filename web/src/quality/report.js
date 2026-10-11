@@ -5,7 +5,9 @@
 
 import { CATEGORIES, STATUS } from './runner.js'
 
-export const REPORT_SCHEMA = 'depguard.quality/v1'
+export const REPORT_SCHEMA = 'depguard.quality/v2'
+// v1 reports (before out-of-scope tests existed) are still verifiable.
+const LEGACY_SCHEMA = 'depguard.quality/v1'
 export const PROJECT_NAME = 'DepGuard'
 
 const round1 = (x) => Math.round(x * 10) / 10
@@ -15,7 +17,7 @@ const round1 = (x) => Math.round(x * 10) / 10
  * coverage  = (passed + failed + error) / total × 100     (share actually executed)
  * Skipped tests lower the coverage, never raise the pass rate.
  */
-export function summarize(results) {
+export function summarize(results, schema = REPORT_SCHEMA) {
   const count = (status) => results.filter((r) => r.status === status).length
   const passed = count(STATUS.PASSED)
   const failed = count(STATUS.FAILED)
@@ -23,7 +25,9 @@ export function summarize(results) {
   const error = count(STATUS.ERROR)
   const executed = passed + failed + error
   const total = results.length
+  const v2 = schema === REPORT_SCHEMA ? { out_of_scope: results.filter((r) => r.out_of_scope).length } : {}
   return {
+    ...v2,
     total,
     passed,
     failed,
@@ -80,13 +84,13 @@ export async function buildReport({ runId, startedAt, finishedAt, build, environ
 /** -> { valid: boolean, reason: string|null } */
 export async function verifyReport(report) {
   if (!report || typeof report !== 'object' || Array.isArray(report)) return { valid: false, reason: 'no es un objeto JSON' }
-  if (report.schema !== REPORT_SCHEMA) return { valid: false, reason: `esquema desconocido: ${String(report.schema)}` }
+  if (report.schema !== REPORT_SCHEMA && report.schema !== LEGACY_SCHEMA) return { valid: false, reason: `esquema desconocido: ${String(report.schema)}` }
   if (typeof report.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(report.sha256))
     return { valid: false, reason: 'falta la huella SHA-256' }
   if (!Array.isArray(report.results) || typeof report.run_id !== 'string') return { valid: false, reason: 'estructura incompleta' }
   const expected = await sha256Hex(canonicalJson(withoutSeal(report)))
   if (expected !== report.sha256) return { valid: false, reason: 'la huella no coincide: el informe fue modificado' }
-  const recomputed = summarize(report.results)
+  const recomputed = summarize(report.results, report.schema)
   if (canonicalJson(recomputed) !== canonicalJson(report.summary))
     return { valid: false, reason: 'el resumen no coincide con los resultados' }
   return { valid: true, reason: null }

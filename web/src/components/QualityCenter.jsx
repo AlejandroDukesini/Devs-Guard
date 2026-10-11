@@ -10,11 +10,11 @@ import { AlertIcon, CheckIcon, ChevronIcon, DownloadIcon, MinusIcon, PlayIcon, S
 const STATUS_ICON = { passed: CheckIcon, failed: XIcon, error: AlertIcon, skipped: MinusIcon }
 const MAX_VERIFY_BYTES = 2 * 1024 * 1024
 
-export function StatusBadge({ status }) {
+export function StatusBadge({ status, outOfScope = false }) {
   const Icon = STATUS_ICON[status]
   return (
     <span className={`inline-flex items-center gap-1 text-sm font-medium ${STATUS_META[status].text}`}>
-      <Icon className="size-4" /> {STATUS_META[status].label}
+      <Icon className="size-4" /> {outOfScope ? 'No aplica' : STATUS_META[status].label}
     </span>
   )
 }
@@ -61,6 +61,9 @@ function Summary({ report }) {
     <div className="flex flex-col gap-4">
       <div className={`rounded-xl border p-4 ${CERT_META[cert.status].style}`}>
         <p className="text-xl font-semibold">{CERT_META[cert.status].title}</p>
+        <p className="mt-0.5 text-xs opacity-80">
+          Ejecución {report.run_id.slice(0, 8)} · {formatDate(report.finished_at)}
+        </p>
         <ul className="mt-1 space-y-0.5 text-sm">
           {cert.reasons.map((r) => (
             <li key={r}>{r}</li>
@@ -122,7 +125,7 @@ function ResultRow({ r }) {
           <span className="font-mono text-xs text-slate-500">{r.id}</span>{' '}
           <span className="font-medium text-slate-900 dark:text-white">{r.name}</span>
         </span>
-        <StatusBadge status={r.status} />
+        <StatusBadge status={r.status} outOfScope={r.out_of_scope} />
       </button>
       {open && (
         <div className="space-y-2 bg-slate-50 px-4 py-3 text-sm dark:bg-slate-900/60">

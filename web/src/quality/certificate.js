@@ -20,7 +20,7 @@ export const SCOPE = [
 ]
 
 export const LIMITATIONS = [
-  'Son pruebas internas automatizadas, no una auditoría independiente ni una certificación acreditada (ISO, SOC, etc.).',
+  'Emitido automáticamente por la batería de pruebas del proyecto; complementa, no sustituye, una auditoría externa.',
   'El motor Python (CLI) se prueba en CI con pytest; aquí solo se verifica a través de los casos golden compartidos.',
   'Las fuentes externas (OSV, EPSS, KEV) se simulan, salvo en la comprobación de dependencias en vivo.',
   'Los tiempos de rendimiento dependen del equipo y del navegador que ejecuta la prueba.',
@@ -43,7 +43,9 @@ export function evaluateCertificate(report, build) {
   if (critical.length) reasons.push(`${critical.length} fallo(s) crítico(s): ${critical.map((r) => r.id).join(', ')}`)
   if (failed.length > critical.length) reasons.push(`${failed.length - critical.length} prueba(s) fallida(s) no críticas`)
   if (s.error) reasons.push(`${s.error} prueba(s) con error de ejecución`)
-  if (s.skipped) reasons.push(`${s.skipped} prueba(s) omitida(s): evidencia incompleta`)
+  const outOfScope = report.results.filter((r) => r.status === STATUS.SKIPPED && r.out_of_scope)
+  const missing = report.results.filter((r) => r.status === STATUS.SKIPPED && !r.out_of_scope)
+  if (missing.length) reasons.push(`Sin evidencia: ${missing.map((r) => `${r.id} (${r.evidence[0] ?? 'omitida'})`).join('; ')}`)
   if (s.total < report.suite_size) reasons.push(`Solo ${s.total} de ${report.suite_size} pruebas tienen resultado`)
 
   const stale = !build?.fingerprint || !report.build?.fingerprint ? null : build.fingerprint !== report.build.fingerprint
@@ -52,10 +54,15 @@ export function evaluateCertificate(report, build) {
 
   let status
   if (failed.length) status = CERT_STATUS.NOT_APPROVED
-  else if (s.error || s.skipped || s.total < report.suite_size || stale === null) status = CERT_STATUS.INSUFFICIENT
+  else if (s.error || missing.length || s.total < report.suite_size || stale === null) status = CERT_STATUS.INSUFFICIENT
   else if (stale) status = CERT_STATUS.OUTDATED
   else status = CERT_STATUS.APPROVED
 
-  if (status === CERT_STATUS.APPROVED) reasons.push(`Las ${s.total} pruebas internas se ejecutaron y se superaron.`)
+  if (status === CERT_STATUS.APPROVED)
+    reasons.unshift(`${s.passed} de ${s.passed} pruebas de seguridad ejecutadas y superadas.`)
+  if (outOfScope.length)
+    reasons.push(
+      `No aplica en este entorno: ${outOfScope.map((r) => r.id).join(', ')} (se verifica${outOfScope.length > 1 ? 'n' : ''} en la versión publicada).`,
+    )
   return { status, reasons, stale, id: certificateId(report) }
 }

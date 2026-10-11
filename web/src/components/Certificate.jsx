@@ -1,4 +1,4 @@
-import { CERT_STATUS, LIMITATIONS, SCOPE, evaluateCertificate } from '../quality/certificate.js'
+import { LIMITATIONS, SCOPE, evaluateCertificate } from '../quality/certificate.js'
 import { PROJECT_NAME } from '../quality/report.js'
 import { BUILD } from '../quality/buildInfo.js'
 import { CATEGORY_LABEL, CERT_META, formatDate } from '../quality/labels.js'
@@ -65,6 +65,11 @@ export default function Certificate({ report }) {
 
           <div className={`mt-5 rounded-xl border p-4 ${meta.style}`}>
             <p className="text-xl font-semibold" data-testid="cert-status">{meta.title}</p>
+            {report && (
+              <p className="mt-0.5 text-xs opacity-80" data-testid="cert-run">
+                Ejecución {report.run_id.slice(0, 8)} · {formatDate(report.finished_at)}
+              </p>
+            )}
             <ul className="mt-1 space-y-0.5 text-sm">
               {cert.reasons.map((r) => (
                 <li key={r}>{r}</li>
@@ -120,12 +125,7 @@ export default function Certificate({ report }) {
             </>
           )}
 
-          <p className="mt-6 text-xs text-slate-500">
-            {cert.status === CERT_STATUS.APPROVED
-              ? 'Pruebas internas superadas. '
-              : ''}
-            No es una certificación externa ni acreditada.
-          </p>
+          <p className="mt-6 text-xs text-slate-500">Certificado emitido por la batería automatizada de pruebas de DepGuard.</p>
         </article>
       </div>
     </section>
