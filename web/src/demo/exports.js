@@ -3,7 +3,7 @@
 import { toSarif } from '../core/reporters/sarif.js'
 import { toCycloneDx } from '../core/reporters/cyclonedx.js'
 
-function download(filename, data, type) {
+export function download(filename, data, type) {
   const blob = new Blob([JSON.stringify(data, null, 2) + '\n'], { type })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -29,3 +29,7 @@ export async function exportReport(kind, report, projectName = 'project') {
     return download('bom.cdx.json', toCycloneDx(report, projectName), 'application/vnd.cyclonedx+json')
   throw new Error(`unknown export ${kind}`)
 }
+
+/** Sealed quality report (depguard.quality/v1), byte-for-byte as stored. */
+export const downloadQualityReport = (report) =>
+  download(`depguard-quality-${report.run_id.slice(0, 8)}.json`, report, 'application/json')

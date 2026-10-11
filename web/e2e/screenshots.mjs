@@ -23,6 +23,10 @@ for (const [name, opts] of [
     await page.getByText('Política: FAIL').waitFor()
     await page.locator('li').filter({ hasText: 'KEV' }).first().getByRole('button').first().click()
     await page.locator('#demo').screenshot({ path: `${OUT}/${name}-${scheme}-demo.png` })
+    await page.getByRole('button', { name: 'Ejecutar pruebas de seguridad' }).click()
+    await page.getByTestId('cert-status').filter({ hasNotText: 'No evaluado' }).waitFor({ timeout: 120_000 })
+    await page.locator('#calidad').screenshot({ path: `${OUT}/${name}-${scheme}-quality.png` })
+    await page.locator('#certificado').screenshot({ path: `${OUT}/${name}-${scheme}-certificate.png` })
     await page.close()
   }
 }

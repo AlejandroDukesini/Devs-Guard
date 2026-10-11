@@ -64,3 +64,20 @@
 @utility section-title {
   @apply text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-white;
 }
+
+/* "Imprimir / PDF" of the quality certificate: only the certificate is printed. */
+@media print {
+  html.print-certificate body * {
+    visibility: hidden;
+  }
+  html.print-certificate #certificado-doc,
+  html.print-certificate #certificado-doc * {
+    visibility: visible;
+    print-color-adjust: exact;
+  }
+  html.print-certificate #certificado-doc {
+    position: absolute;
+    inset: 0 0 auto 0;
+    border: 0;
+  }
+}

@@ -13,6 +13,19 @@ All notable changes to this project are documented here. The format follows
   CycloneDX downloads. Parity with the Python engine is enforced by the shared
   goldens.
 - `scripts/check_text_safety.py`: CI fails on invisible/bidi characters.
+- Security & quality center in the web demo: 46 real tests (unit, integration,
+  functional, negative, regression, performance, integrity, dependencies) run
+  in the browser or with `npm run quality`, sealed SHA-256 reports, verified
+  local history, and a certificate of internal tests tied to the run and to a
+  fingerprint of the evaluated code (docs/quality.md).
+
+### Changed
+- Web demo redesigned with far less text: a black hero with only the name and
+  a one-line description next to a photo, and no Architecture or Demo vs CLI
+  sections (those are covered in the docs).
+- `web/package-lock.json` now resolves from registry.npmjs.org instead of a
+  third-party mirror. All 276 integrity hashes were checked against the
+  official registry and are unchanged. `web/.npmrc` pins the registry.
 
 ### Fixed
 - Fixed-version selection for ecosystems without a dedicated comparator

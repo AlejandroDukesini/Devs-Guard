@@ -33,6 +33,14 @@ Navegador
           https://api.osv.dev   https://api.first.org   /api/kev → (Netlify rewrite) → cisa.gov
 ```
 
+## Centro de seguridad y calidad
+
+La página puede ejecutar 46 pruebas reales del motor y emitir un certificado
+de pruebas internas ligado a esa ejecución. Ver [docs/quality.md](../docs/quality.md).
+
+La imagen de portada (`public/hero-security.webp`) es de FlyD en Unsplash
+(licencia Unsplash) y se sirve desde el propio sitio por la CSP `img-src 'self'`.
+
 ## Ejecutar en local
 
 ```bash
@@ -48,6 +56,7 @@ npm run dev          # http://localhost:5173 (con proxy /api/kev igual que Netli
 | `npm run lint` | ESLint (prohíbe `dangerouslySetInnerHTML`, `innerHTML`, `eval`) |
 | `npm run build` | Build de producción en `dist/` |
 | `npm run snapshot` | Regraba la instantánea con datos reales (necesita internet) |
+| `npm run quality` | Suite de seguridad y calidad (la misma del botón de la web) → `reports/quality-report.json` |
 
 No hay variables de entorno: nada que configurar ni ningún secreto que filtrar.
 

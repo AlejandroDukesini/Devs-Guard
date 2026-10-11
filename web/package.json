@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "quality": "node scripts/quality.mjs",
     "snapshot": "node scripts/record-snapshot.mjs"
   },
   "dependencies": {

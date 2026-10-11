@@ -183,6 +183,7 @@ GitLab, Jenkins y más: [docs/ci-cd.md](docs/ci-cd.md).
 | [Formatos de salida](docs/output-formats.md) | JSON, SARIF, CycloneDX/VEX |
 | [CI/CD](docs/ci-cd.md) | GitHub Actions, GitLab, Jenkins, exit codes |
 | [Seguridad](docs/security.md) | Modelo de amenazas del propio escáner |
+| [Calidad y certificado](docs/quality.md) | Suite de pruebas de la web, informe sellado y certificado |
 | [**Limitaciones**](docs/limitations.md) | Qué no detecta y cuándo se equivoca |
 | [Benchmarks](docs/benchmark.md) | Metodología (sin cifras inventadas) |
 | [Releases](docs/releasing.md) | Versionado, firma y verificación |

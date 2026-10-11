@@ -3,7 +3,10 @@ import Header from './components/Header.jsx'
 import Hero from './components/Hero.jsx'
 import ScanPanel from './components/ScanPanel.jsx'
 import Results from './components/Results.jsx'
-import { Architecture, DemoVsLocal, Footer, HowItWorks } from './components/Sections.jsx'
+import QualityCenter from './components/QualityCenter.jsx'
+import Certificate from './components/Certificate.jsx'
+import { Footer, HowItWorks } from './components/Sections.jsx'
+import { useQuality } from './quality/useQuality.js'
 import { useScanner } from './demo/useScanner.js'
 import { SAMPLES, loadSample } from './demo/samples.js'
 import { DEFAULT_CONFIG } from './demo/labels.js'
@@ -22,6 +25,7 @@ const INITIAL = {
 export default function App() {
   const [input, setInput] = useState(INITIAL)
   const scanner = useScanner()
+  const quality = useQuality()
 
   const onScan = async () => {
     let files
@@ -58,11 +62,7 @@ export default function App() {
         <Hero />
         <section id="demo" className="scroll-mt-16 bg-slate-50 py-12 dark:bg-slate-900/40">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <h2 className="section-title">Demo interactiva</h2>
-            <p className="mt-2 max-w-3xl text-slate-600 dark:text-slate-400">
-              Escaneo real: el motor corre en esta pestaña y consulta las fuentes públicas. Elige un ejemplo o usa tus propios
-              archivos.
-            </p>
+            <h2 className="section-title">Demo</h2>
             <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
               <ScanPanel
                 scanning={scanner.phase === 'scanning'}
@@ -87,8 +87,8 @@ export default function App() {
           </div>
         </section>
         <HowItWorks />
-        <Architecture />
-        <DemoVsLocal />
+        <QualityCenter quality={quality} />
+        <Certificate report={quality.history.reports[0] ?? null} />
       </main>
       <Footer />
     </>

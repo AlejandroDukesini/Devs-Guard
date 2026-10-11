@@ -70,3 +70,27 @@ export const Spinner = ({ className = 'size-4' }) => (
     <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
   </svg>
 )
+
+export const XIcon = ({ className = 'size-4' }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+    <path d="M6 6l12 12M18 6 6 18" />
+  </svg>
+)
+
+export const MinusIcon = ({ className = 'size-4' }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+    <path d="M6 12h12" />
+  </svg>
+)
+
+export const PlayIcon = ({ className = 'size-4' }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+    <path d="M7 4.5v15l12-7.5-12-7.5Z" />
+  </svg>
+)
+
+export const PrinterIcon = ({ className = 'size-4' }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+    <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z" />
+  </svg>
+)
