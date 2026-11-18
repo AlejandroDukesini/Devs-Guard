@@ -11,7 +11,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
-from dep_guard import __version__, correlate, risk
+from dep_guard import __version__, correlate, patch, risk
 from dep_guard.adapters import ParseContext, ParseError
 from dep_guard.config import Config, ConfigError, find_config, load
 from dep_guard.discovery import DiscoveryError, ManifestFile, discover, read_text, sibling_reader
@@ -28,7 +28,10 @@ from dep_guard.policy import PolicyResult, Verdict, evaluate
 from dep_guard.sources.cache import Cache
 from dep_guard.sources.enrich import EpssSource, KevSource
 from dep_guard.sources.http import HttpClient, new_client
+from dep_guard.sources.nvd import NvdSource
+from dep_guard.sources.nvd import apply as apply_nvd
 from dep_guard.sources.osv import OsvSource
+from dep_guard.sources.registries import RegistrySource
 
 log = logging.getLogger("depguard")
 
@@ -46,6 +49,8 @@ class ScanOptions:
     cache_dir: Path | None = None
     epss: bool | None = None  # None = use config
     kev: bool | None = None
+    latest: bool | None = None
+    nvd: bool | None = None
     allow_incomplete: bool = False
     today: dt.date | None = None
     config_overrides: dict[str, Any] = field(default_factory=dict)
@@ -123,13 +128,18 @@ async def scan_async(target: str | Path, options: ScanOptions) -> ScanReport:
     sources: dict[str, str] = {}
     use_epss = config.epss if options.epss is None else options.epss
     use_kev = config.kev if options.kev is None else options.kev
+    use_latest = config.latest if options.latest is None else options.latest
+    use_nvd = config.nvd if options.nvd is None else options.nvd
 
     async with new_client(config.timeout) as client:
         http = None if options.offline else HttpClient(client, retries=config.retries)
         findings = await _query_and_correlate(
             components, http, cache, options.offline, sources, problems, timings
         )
+        await _nvd(findings, http, cache, use_nvd, sources, problems, timings)
         await _enrich(findings, http, cache, use_epss, use_kev, sources, problems, timings)
+        await _latest(components, http, cache, options.offline, use_latest, sources, timings)
+    patch.assess_all(components, findings)
 
     t0 = time.perf_counter()
     risk_cfg = risk.RiskConfig(epss_threshold=config.epss_threshold)
@@ -231,6 +241,69 @@ async def _query_and_correlate(
             advisory_ids = [vid for vid, _ in outcome.ids[comp.key]]
             findings += correlate.build_findings(comp, advisory_ids, records)
     return findings
+
+
+async def _nvd(
+    findings: list[Finding],
+    http: HttpClient | None,
+    cache: Cache,
+    enabled: bool,
+    sources: dict[str, str],
+    problems: list[Problem],
+    timings: dict[str, float],
+) -> None:
+    if not enabled:
+        sources["nvd"] = "disabled"
+        return
+    t0 = time.perf_counter()
+    cves = sorted({c for f in findings if f.cvss_score is None for c in f.cves})
+    if not cves:
+        sources["nvd"] = "not needed"
+        return
+    metrics, warning = await NvdSource(http, cache).lookup(cves)
+    updated = apply_nvd(findings, metrics)
+    sources["nvd"] = f"error: {warning}" if warning else f"ok ({updated} severities from NVD)"
+    if warning:
+        problems.append(Problem("nvd_partial", warning, None))
+    timings["nvd_ms"] = _ms(t0)
+
+
+async def _latest(
+    components: list[Component],
+    http: HttpClient | None,
+    cache: Cache,
+    offline: bool,
+    enabled: bool,
+    sources: dict[str, str],
+    timings: dict[str, float],
+) -> None:
+    """Latest stable release per package, and whether that release is itself affected."""
+    if not enabled:
+        sources["registries"] = "disabled"
+        return
+    t0 = time.perf_counter()
+    checkable = [c for c in components if c.version and c.status is not ComponentStatus.PRIVATE]
+    outcome = await RegistrySource(http, cache).latest(checkable)
+    candidates: list[Component] = []
+    for comp in checkable:
+        comp.latest = outcome.latest.get(comp.key)
+        if comp.latest and comp.latest != comp.version:
+            candidates.append(replace(comp, version=comp.latest, locations=[], paths=[]))
+    # "Latest published" is not "latest safe": ask OSV about the latest release too.
+    if candidates:
+        osv = await OsvSource(http, cache, offline=offline).query(candidates)
+        by_target = {c.key: c for c in candidates}
+        for comp in checkable:
+            if not comp.latest or comp.latest == comp.version:
+                continue
+            key = replace(comp, version=comp.latest).key
+            if key in osv.errors or key not in by_target:
+                continue
+            comp.latest_vulnerable = bool(osv.ids.get(key))
+    sources["registries"] = (
+        f"error: {outcome.errors} registry lookups failed" if outcome.errors else "ok"
+    )
+    timings["registries_ms"] = _ms(t0)
 
 
 async def _enrich(

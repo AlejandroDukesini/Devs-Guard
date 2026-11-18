@@ -89,6 +89,7 @@ def _finding(component: Component, group: list[str], records: dict[str, dict[str
     label = Severity.UNKNOWN
     cwes: set[str] = set()
     published: list[str] = []
+    modified: list[str] = []
     for rec in recs:
         for sev in rec.get("severity") or []:
             if isinstance(sev, dict) and sev.get("type") in ("CVSS_V3", "CVSS_V3_1"):
@@ -104,8 +105,17 @@ def _finding(component: Component, group: list[str], records: dict[str, dict[str
         cwes.update(c for c in _str_list(db.get("cwe_ids")) if c.startswith("CWE-"))
         if isinstance(rec.get("published"), str):
             published.append(rec["published"])
+        if isinstance(rec.get("modified"), str):
+            modified.append(rec["modified"])
 
-    severity = cvss.severity_from_score(best_score) if best_score is not None else label
+    # Conflicting sources: a CVSS vector wins over a qualitative label, and the
+    # highest score/label across the alias group wins (never the most reassuring).
+    if best_score is not None:
+        severity, source = cvss.severity_from_score(best_score), "cvss_v3"
+    elif label is not Severity.UNKNOWN:
+        severity, source = label, "advisory_label"
+    else:
+        severity, source = Severity.UNKNOWN, "none"
 
     return Finding(
         component=component,
@@ -119,6 +129,8 @@ def _finding(component: Component, group: list[str], records: dict[str, dict[str
         fixed_versions=fixed_versions(component, recs),
         references=_references(recs),
         published=min(published) if published else None,
+        modified=clean(max(modified), 40) if modified else None,
+        severity_source=source,
     )
 
 

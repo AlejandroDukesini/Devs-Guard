@@ -24,7 +24,16 @@
     },
     "unresolved": 0,
     "errors": 0,
-    "private": 0
+    "private": 0,
+    "by_patch_status": {
+      "up_to_date": 0,
+      "outdated": 0,
+      "vulnerable_fix_available": 0,
+      "vulnerable_no_fix": 0,
+      "no_known_vulnerabilities": 0,
+      "insufficient_data": 0,
+      "unidentifiable_version": 0
+    }
   },
   "policy": {
     "violations": [],
@@ -36,8 +45,10 @@
   },
   "sources": {
     "osv": "ok",
+    "nvd": "disabled",
     "epss": "not needed",
-    "kev": "not needed"
+    "kev": "not needed",
+    "registries": "disabled"
   },
   "manifests": [
     {

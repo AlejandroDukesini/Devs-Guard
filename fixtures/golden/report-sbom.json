@@ -24,7 +24,16 @@
     },
     "unresolved": 0,
     "errors": 0,
-    "private": 0
+    "private": 0,
+    "by_patch_status": {
+      "up_to_date": 0,
+      "outdated": 0,
+      "vulnerable_fix_available": 2,
+      "vulnerable_no_fix": 0,
+      "no_known_vulnerabilities": 2,
+      "insufficient_data": 0,
+      "unidentifiable_version": 0
+    }
   },
   "policy": {
     "violations": [
@@ -36,8 +45,10 @@
   },
   "sources": {
     "osv": "ok",
+    "nvd": "disabled",
     "epss": "ok",
-    "kev": "ok"
+    "kev": "ok",
+    "registries": "disabled"
   },
   "manifests": [
     {
@@ -89,6 +100,8 @@
         "https://example.invalid/advisories/GHSA-dmo1-js29-0008"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "cvss_v3",
       "epss": null,
       "kev": false,
       "priority": "P1",
@@ -158,6 +171,8 @@
         "https://example.invalid/advisories/GHSA-dmo1-lg14-0004"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "advisory_label",
       "epss": null,
       "kev": false,
       "priority": "P3",
@@ -193,6 +208,7 @@
       "ecosystem": "Maven",
       "current": "2.9.0",
       "upgrade_to": "2.9.5",
+      "breaking": false,
       "fixes": 1,
       "of": 1,
       "direct": true,
@@ -206,6 +222,7 @@
       "ecosystem": "npm",
       "current": "1.4.0",
       "upgrade_to": "1.4.1",
+      "breaking": false,
       "fixes": 1,
       "of": 1,
       "direct": true,
@@ -236,7 +253,11 @@
           "file": "app.cdx.json",
           "line": 26
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "no_known_vulnerabilities",
+      "patch_note": "latest release not checked"
     },
     {
       "name": "com.acme:acme-json",
@@ -258,7 +279,11 @@
           "file": "app.cdx.json",
           "line": 11
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_fix_available",
+      "patch_note": "upgrade to 2.9.5 (fixes 1 of 1)"
     },
     {
       "name": "com.acme:acme-json-core",
@@ -281,7 +306,11 @@
           "file": "app.cdx.json",
           "line": 18
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "no_known_vulnerabilities",
+      "patch_note": "latest release not checked"
     },
     {
       "name": "@acme/logger",
@@ -303,7 +332,11 @@
           "file": "app.cdx.json",
           "line": 32
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_fix_available",
+      "patch_note": "upgrade to 1.4.1 (fixes 1 of 1)"
     }
   ],
   "problems": [

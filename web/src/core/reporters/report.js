@@ -2,6 +2,7 @@
 // Field order and values are identical: the shared goldens compare them.
 
 import { recommendedUpgrade } from '../correlate.js'
+import { PATCH_STATUSES, isBreakingUpgrade } from '../patch.js'
 import { ComponentStatus, PRIORITIES, SEVERITY_ORDER, componentKey, exitCodeFor, priorityRank, purlWithVersion } from '../models.js'
 
 
@@ -21,6 +22,10 @@ export const componentDict = (c) => ({
   error: c.error,
   paths: c.paths,
   locations: locations(c),
+  latest: c.latest,
+  latest_vulnerable: c.latestVulnerable,
+  patch_status: c.patchStatus,
+  patch_note: c.patchNote,
 })
 
 export const findingDict = (f) => ({
@@ -43,6 +48,8 @@ export const findingDict = (f) => ({
   fixed_versions: f.fixedVersions,
   references: f.references,
   published: f.published,
+  modified: f.modified,
+  severity_source: f.severitySource,
   epss: f.epss === null ? null : { score: f.epss, percentile: f.epssPercentile },
   kev: f.kev,
   priority: f.priority,
@@ -68,6 +75,7 @@ export function remediation(findings) {
       ecosystem: comp.ecosystem,
       current: comp.version,
       upgrade_to: target,
+      breaking: isBreakingUpgrade(comp.version, target),
       fixes,
       of: group.length,
       direct: comp.direct,
@@ -95,6 +103,7 @@ function summary(components, findings) {
     unresolved: count(ComponentStatus.UNRESOLVED),
     errors: count(ComponentStatus.ERROR),
     private: count(ComponentStatus.PRIVATE),
+    by_patch_status: Object.fromEntries(PATCH_STATUSES.map((s) => [s, components.filter((c) => c.patchStatus === s).length])),
   }
 }
 

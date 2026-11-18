@@ -11,6 +11,8 @@ export const defaultConfig = () => ({
   exclude: [],
   epss: true,
   kev: true,
+  latest: false,
+  nvd: false,
   timeout: 20,
   retries: 3,
   cache: true,
@@ -34,6 +36,8 @@ const SCHEMA = {
   sources: {
     epss: ['boolean', 'epss'],
     kev: ['boolean', 'kev'],
+    latest: ['boolean', 'latest'], // accepted for config parity; local app only
+    nvd: ['boolean', 'nvd'], // accepted for config parity; local app only
     timeout: [NUM, 'timeout'],
     retries: ['int', 'retries'],
     cache: ['boolean', 'cache'],

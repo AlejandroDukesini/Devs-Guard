@@ -26,7 +26,23 @@ from dep_guard import __version__
 
 log = logging.getLogger("depguard.http")
 
-ALLOWED_HOSTS = frozenset({"api.osv.dev", "api.first.org", "www.cisa.gov"})
+ALLOWED_HOSTS = frozenset(
+    {
+        # vulnerability data
+        "api.osv.dev",
+        "api.first.org",
+        "www.cisa.gov",
+        "services.nvd.nist.gov",
+        # official package registries (latest published version only)
+        "pypi.org",
+        "registry.npmjs.org",
+        "index.crates.io",
+        "proxy.golang.org",
+        "repo.packagist.org",
+        "repo1.maven.org",
+        "api.nuget.org",
+    }
+)
 RETRY_STATUS = frozenset({429, 500, 502, 503, 504})
 USER_AGENT = f"depguard/{__version__} (+https://github.com/AlejandroDukesini/Devs-Guard)"
 MAX_RETRY_AFTER = 30.0
@@ -63,14 +79,34 @@ class HttpClient:
         self.request_count = 0
         self._retry_after: float | None = None
 
-    async def get_json(self, url: str, params: dict[str, str] | None = None) -> Any:
-        return await self._request("GET", url, params=params)
+    async def get_json(
+        self,
+        url: str,
+        params: dict[str, str] | None = None,
+        headers: dict[str, str] | None = None,
+        none_on_404: bool = False,
+    ) -> Any:
+        return await self._request(
+            "GET", url, params=params, headers=headers, none_on_404=none_on_404
+        )
+
+    async def get_text(self, url: str, none_on_404: bool = False) -> str | None:
+        """Plain-text body (crates.io sparse index, Maven XML metadata)."""
+        result = await self._request("GET", url, as_text=True, none_on_404=none_on_404)
+        return result if isinstance(result, str) or result is None else None
 
     async def post_json(self, url: str, body: Any) -> Any:
         return await self._request("POST", url, body=body)
 
     async def _request(
-        self, method: str, url: str, body: Any = None, params: dict[str, str] | None = None
+        self,
+        method: str,
+        url: str,
+        body: Any = None,
+        params: dict[str, str] | None = None,
+        headers: dict[str, str] | None = None,
+        as_text: bool = False,
+        none_on_404: bool = False,
     ) -> Any:
         parts = urlsplit(url)
         if parts.scheme != "https" or parts.hostname not in ALLOWED_HOSTS:
@@ -82,7 +118,9 @@ class HttpClient:
                 await self._sleep(self._backoff(attempt))
             self.request_count += 1
             try:
-                async with self._client.stream(method, url, json=body, params=params) as resp:
+                async with self._client.stream(
+                    method, url, json=body, params=params, headers=headers
+                ) as resp:
                     if resp.status_code in RETRY_STATUS:
                         last_error = f"HTTP {resp.status_code}"
                         self._retry_after = _retry_after(resp.headers.get("Retry-After"))
@@ -90,6 +128,8 @@ class HttpClient:
                             "%s %s -> %s (attempt %d)", method, parts.path, last_error, attempt + 1
                         )
                         continue
+                    if resp.status_code == 404 and none_on_404:
+                        return None
                     if resp.status_code != 200:
                         raise SourceError(f"{parts.hostname} answered HTTP {resp.status_code}")
                     raw = await self._read_capped(resp)
@@ -102,7 +142,7 @@ class HttpClient:
                 self._retry_after = None
                 continue
             try:
-                return json.loads(raw)
+                return raw.decode("utf-8") if as_text else json.loads(raw)
             except (json.JSONDecodeError, UnicodeDecodeError):
                 raise SourceError(f"{parts.hostname} returned invalid JSON") from None
         raise SourceError(

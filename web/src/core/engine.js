@@ -13,6 +13,7 @@ import { Cache } from './sources/cache.js'
 import { EpssSource, KEV_PROXY_URL, KevSource } from './sources/enrich.js'
 import { HttpClient } from './sources/http.js'
 import { OsvSource } from './sources/osv.js'
+import { assessAll } from './patch.js'
 import { fnmatch } from './discovery.js'
 
 export const ENGINE_VERSION = '1.0.0b2'
@@ -127,6 +128,7 @@ export async function scan(files, options = {}) {
     const reasons = [...new Set(errored.map((c) => c.error ?? ''))].sort(byStr).join('; ').slice(0, 300)
     sources.osv = `error: ${errored.length} dependencies not checked (${reasons})`
   } else sources.osv = offline ? 'offline-cache' : 'ok'
+  sources.nvd = 'disabled' // NVD has no CORS support; available in the local app
 
   const findings = []
   for (const comp of queryable) {
@@ -164,6 +166,8 @@ export async function scan(files, options = {}) {
     if (err) problems.push(problem('kev_unavailable', err, null))
   } else sources.kev = 'not needed'
   timings.enrich_ms = ms(t0)
+  sources.registries = 'disabled' // latest-release lookups: local app only
+  assessAll(components, findings)
 
   // 4. risk + policy
   t0 = performance.now()

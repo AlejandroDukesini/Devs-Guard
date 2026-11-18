@@ -24,7 +24,16 @@
     },
     "unresolved": 1,
     "errors": 0,
-    "private": 0
+    "private": 0,
+    "by_patch_status": {
+      "up_to_date": 0,
+      "outdated": 0,
+      "vulnerable_fix_available": 3,
+      "vulnerable_no_fix": 0,
+      "no_known_vulnerabilities": 2,
+      "insufficient_data": 0,
+      "unidentifiable_version": 1
+    }
   },
   "policy": {
     "violations": [
@@ -37,8 +46,10 @@
   },
   "sources": {
     "osv": "ok",
+    "nvd": "disabled",
     "epss": "ok",
-    "kev": "ok"
+    "kev": "ok",
+    "registries": "disabled"
   },
   "manifests": [
     {
@@ -90,6 +101,8 @@
         "https://example.invalid/advisories/GHSA-dmo1-cr41-0006"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "cvss_v3",
       "epss": {
         "score": 0.011,
         "percentile": 0.77
@@ -165,6 +178,8 @@
         "https://example.invalid/advisories/PYSEC-2099-0005"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "cvss_v3",
       "epss": {
         "score": 0.42,
         "percentile": 0.97
@@ -235,6 +250,8 @@
         "https://example.invalid/advisories/GHSA-dmo1-ln10-0007"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "cvss_v3",
       "epss": {
         "score": 0.0005,
         "percentile": 0.12
@@ -273,6 +290,7 @@
       "ecosystem": "PyPI",
       "current": "41.0.0",
       "upgrade_to": "41.0.6",
+      "breaking": false,
       "fixes": 1,
       "of": 1,
       "direct": true,
@@ -286,6 +304,7 @@
       "ecosystem": "PyPI",
       "current": "3.1.0",
       "upgrade_to": "3.1.4",
+      "breaking": false,
       "fixes": 1,
       "of": 1,
       "direct": false,
@@ -300,6 +319,7 @@
       "ecosystem": "PyPI",
       "current": "1.0.0",
       "upgrade_to": "1.0.3",
+      "breaking": false,
       "fixes": 1,
       "of": 1,
       "direct": true,
@@ -330,7 +350,11 @@
           "file": "uv.lock",
           "line": 6
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_fix_available",
+      "patch_note": "upgrade to 41.0.6 (fixes 1 of 1)"
     },
     {
       "name": "acme-internal",
@@ -352,7 +376,11 @@
           "file": "uv.lock",
           "line": 11
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "unidentifiable_version",
+      "patch_note": "non-registry source"
     },
     {
       "name": "acme-lint",
@@ -374,7 +402,11 @@
           "file": "uv.lock",
           "line": 16
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_fix_available",
+      "patch_note": "upgrade to 1.0.3 (fixes 1 of 1)"
     },
     {
       "name": "acme-markup",
@@ -398,7 +430,11 @@
           "file": "uv.lock",
           "line": 25
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "no_known_vulnerabilities",
+      "patch_note": "latest release not checked"
     },
     {
       "name": "acme-templates",
@@ -421,7 +457,11 @@
           "file": "uv.lock",
           "line": 21
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_fix_available",
+      "patch_note": "upgrade to 3.1.4 (fixes 1 of 1)"
     },
     {
       "name": "acme-web",
@@ -443,7 +483,11 @@
           "file": "uv.lock",
           "line": 34
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "no_known_vulnerabilities",
+      "patch_note": "latest release not checked"
     }
   ],
   "problems": []

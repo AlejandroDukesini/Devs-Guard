@@ -24,7 +24,16 @@
     },
     "unresolved": 4,
     "errors": 0,
-    "private": 0
+    "private": 0,
+    "by_patch_status": {
+      "up_to_date": 0,
+      "outdated": 0,
+      "vulnerable_fix_available": 1,
+      "vulnerable_no_fix": 1,
+      "no_known_vulnerabilities": 3,
+      "insufficient_data": 0,
+      "unidentifiable_version": 4
+    }
   },
   "policy": {
     "violations": [
@@ -37,8 +46,10 @@
   },
   "sources": {
     "osv": "ok",
+    "nvd": "disabled",
     "epss": "ok",
-    "kev": "ok"
+    "kev": "ok",
+    "registries": "disabled"
   },
   "manifests": [
     {
@@ -92,6 +103,8 @@
         "https://example.invalid/advisories/OSV-2099-0001"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "cvss_v3",
       "epss": {
         "score": 0.62,
         "percentile": 0.99
@@ -166,6 +179,8 @@
         "https://example.invalid/advisories/GHSA-dmo1-lp10-0003"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "cvss_v3",
       "epss": {
         "score": 0.002,
         "percentile": 0.41
@@ -204,6 +219,7 @@
       "ecosystem": "npm",
       "current": "6.2.0",
       "upgrade_to": "6.2.4",
+      "breaking": false,
       "fixes": 1,
       "of": 1,
       "direct": true,
@@ -217,6 +233,7 @@
       "ecosystem": "npm",
       "current": "1.0.0",
       "upgrade_to": null,
+      "breaking": null,
       "fixes": 0,
       "of": 1,
       "direct": true,
@@ -247,7 +264,11 @@
           "file": "package.json",
           "line": 10
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_fix_available",
+      "patch_note": "upgrade to 6.2.4 (fixes 1 of 1)"
     },
     {
       "name": "acme-router",
@@ -269,7 +290,11 @@
           "file": "package.json",
           "line": 4
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "unidentifiable_version",
+      "patch_note": "version range (^4.1.0); commit a package-lock.json"
     },
     {
       "name": "acme-test",
@@ -291,7 +316,11 @@
           "file": "package.json",
           "line": 14
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "no_known_vulnerabilities",
+      "patch_note": "latest release not checked"
     },
     {
       "name": "anything",
@@ -313,7 +342,11 @@
           "file": "package.json",
           "line": 11
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "unidentifiable_version",
+      "patch_note": "no version constraint"
     },
     {
       "name": "exact-eq",
@@ -335,7 +368,11 @@
           "file": "package.json",
           "line": 6
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "no_known_vulnerabilities",
+      "patch_note": "latest release not checked"
     },
     {
       "name": "left-pad-plus",
@@ -357,7 +394,11 @@
           "file": "package.json",
           "line": 5
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_no_fix",
+      "patch_note": "1 of 1 advisories have no fixed version"
     },
     {
       "name": "local",
@@ -379,7 +420,11 @@
           "file": "package.json",
           "line": 8
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "unidentifiable_version",
+      "patch_note": "non-registry source"
     },
     {
       "name": "pre",
@@ -401,7 +446,11 @@
           "file": "package.json",
           "line": 7
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "no_known_vulnerabilities",
+      "patch_note": "latest release not checked"
     },
     {
       "name": "range",
@@ -423,7 +472,11 @@
           "file": "package.json",
           "line": 9
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "unidentifiable_version",
+      "patch_note": "version range (>=1.0.0 <2.0.0); commit a package-lock.json"
     }
   ],
   "problems": [

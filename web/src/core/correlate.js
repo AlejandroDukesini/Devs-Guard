@@ -25,6 +25,8 @@ export function makeFinding(component, fields) {
     fixedVersions: fields.fixedVersions ?? [],
     references: fields.references ?? [],
     published: fields.published ?? null,
+    modified: fields.modified ?? null,
+    severitySource: fields.severitySource ?? 'none',
     epss: null,
     epssPercentile: null,
     kev: null,
@@ -103,6 +105,7 @@ function finding(component, group, records) {
   let label = Severity.UNKNOWN
   const cwes = new Set()
   const published = []
+  const modified = []
   for (const rec of recs) {
     for (const sev of Array.isArray(rec.severity) ? rec.severity : []) {
       if (isObj(sev) && ['CVSS_V3', 'CVSS_V3_1'].includes(sev.type)) {
@@ -119,7 +122,10 @@ function finding(component, group, records) {
     if (severityRank(recLabel) > severityRank(label)) label = recLabel
     for (const c of strList(db.cwe_ids)) if (c.startsWith('CWE-')) cwes.add(c)
     if (typeof rec.published === 'string') published.push(rec.published)
+    if (typeof rec.modified === 'string') modified.push(rec.modified)
   }
+  // Conflicting sources: a CVSS vector wins over a qualitative label.
+  const severitySource = bestScore !== null ? 'cvss_v3' : label !== Severity.UNKNOWN ? 'advisory_label' : 'none'
   return makeFinding(component, {
     id: canonical(allIds),
     aliases: allIds,
@@ -131,6 +137,8 @@ function finding(component, group, records) {
     fixedVersions: fixedVersions(component, recs),
     references: references(recs),
     published: published.length ? published.sort(byString)[0] : null,
+    modified: modified.length ? clean(modified.sort(byString)[modified.length - 1], 40) : null,
+    severitySource,
   })
 }
 

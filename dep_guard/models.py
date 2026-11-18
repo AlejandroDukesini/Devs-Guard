@@ -65,6 +65,18 @@ class Priority(StrEnum):
         return int(self.value[1])
 
 
+class PatchStatus(StrEnum):
+    """Remediation state of one component (see dep_guard/patch.py)."""
+
+    UP_TO_DATE = "up_to_date"  # no known advisories, installed >= latest stable
+    OUTDATED = "outdated"  # no known advisories, a newer stable release exists
+    VULNERABLE_FIX_AVAILABLE = "vulnerable_fix_available"  # every advisory has a fix
+    VULNERABLE_NO_FIX = "vulnerable_no_fix"  # at least one advisory has no fixed version
+    NO_KNOWN_VULNERABILITIES = "no_known_vulnerabilities"  # latest version not checked
+    INSUFFICIENT_DATA = "insufficient_data"  # lookup failed or package kept private
+    UNIDENTIFIABLE_VERSION = "unidentifiable_version"  # no exact version to check
+
+
 class FindingStatus(StrEnum):
     ACTIVE = "active"
     IGNORED = "ignored"
@@ -89,6 +101,10 @@ class Component:
     unresolved_reason: str | None = None
     status: ComponentStatus = ComponentStatus.CLEAN
     error: str | None = None
+    latest: str | None = None  # latest stable release in the official registry
+    latest_vulnerable: bool | None = None  # None = not checked
+    patch_status: PatchStatus = PatchStatus.NO_KNOWN_VULNERABILITIES
+    patch_note: str = ""
 
     @property
     def key(self) -> str:
@@ -120,6 +136,10 @@ class Finding:
     fixed_versions: list[str]  # candidate fixes for the installed version
     references: list[str]
     published: str | None
+    modified: str | None = None  # latest `modified` of the advisory group
+    # Where `severity` comes from: cvss_v3 (OSV vector, scored by DepGuard),
+    # advisory_label (qualitative rating only), nvd_cvss_v3 / nvd_cvss_v4, or none.
+    severity_source: str = "none"
     epss: float | None = None
     epss_percentile: float | None = None
     kev: bool | None = None  # None = KEV not checked

@@ -13,7 +13,8 @@ from pathlib import Path
 
 import pytest
 
-from dep_guard.adapters import ParseContext, ParseError, adapter_for
+from dep_guard.adapters import ADAPTERS, ParseContext, ParseError, adapter_for
+from dep_guard.cli import SUPPORTED_FILES
 from dep_guard.discovery import discover
 from dep_guard.engine import ScanOptions, collect, scan
 from dep_guard.policy import Verdict
@@ -286,7 +287,4 @@ def test_hostile_names_are_sanitised() -> None:
 
 
 def test_every_adapter_is_documented_in_the_formats_command() -> None:
-    from dep_guard.adapters import ADAPTERS
-    from dep_guard.cli import SUPPORTED_FILES
-
     assert {a.id for a in ADAPTERS} == set(SUPPORTED_FILES)

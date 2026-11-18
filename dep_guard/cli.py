@@ -114,6 +114,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_scan.add_argument("--no-epss", action="store_true", help="do not query FIRST EPSS")
     p_scan.add_argument("--no-kev", action="store_true", help="do not query CISA KEV")
     p_scan.add_argument(
+        "--latest",
+        action="store_true",
+        help="also look up the latest stable release in each official registry "
+        "(up to date / outdated / latest release also affected)",
+    )
+    p_scan.add_argument(
+        "--nvd",
+        action="store_true",
+        help="use NVD (CVSS v3/v4, CWE) for advisories without a CVSS vector; "
+        "set NVD_API_KEY for a higher rate limit",
+    )
+    p_scan.add_argument(
         "--allow-incomplete",
         action="store_true",
         help="exit 0 instead of 3 when some dependencies could not be checked",
@@ -219,6 +231,8 @@ def _run(args: argparse.Namespace, out: Console, err: Console) -> int:
         use_cache=not args.no_cache,
         epss=False if args.no_epss else None,
         kev=False if args.no_kev else None,
+        latest=True if args.latest else None,
+        nvd=True if args.nvd else None,
         allow_incomplete=args.allow_incomplete,
         config_overrides=overrides,
     )

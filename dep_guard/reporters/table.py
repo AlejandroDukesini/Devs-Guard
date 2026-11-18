@@ -15,7 +15,14 @@ from rich.table import Table
 from rich.text import Text
 
 from dep_guard.engine import ScanReport
-from dep_guard.models import ComponentStatus, Finding, FindingStatus, Priority, Severity
+from dep_guard.models import (
+    ComponentStatus,
+    Finding,
+    FindingStatus,
+    PatchStatus,
+    Priority,
+    Severity,
+)
 from dep_guard.policy import Verdict
 from dep_guard.reporters.json_report import remediation, summary
 
@@ -157,6 +164,11 @@ def render(report: ScanReport, console: Console, quiet: bool = False) -> None:
                     Text(
                         f"  • {r['package']} {r['current']} → {r['upgrade_to']}  "
                         f"corrige {r['fixes']} de {r['of']}{how}"
+                        + (
+                            "  ⚠ cambio de versión mayor: revisar compatibilidad"
+                            if r["breaking"]
+                            else ""
+                        )
                     )
                 )
 
@@ -190,6 +202,18 @@ def render(report: ScanReport, console: Console, quiet: bool = False) -> None:
         )
         for c in errors[:10]:
             console.print(Text(f"  {c.name}@{c.version}: {c.error}", style="dim"))
+    outdated = [c for c in report.components if c.patch_status is PatchStatus.OUTDATED]
+    if outdated:
+        console.print(
+            Text(
+                f"\nDesactualizadas sin vulnerabilidades conocidas ({len(outdated)})",
+                style="bold",
+            )
+        )
+        for c in outdated[:10]:
+            console.print(Text(f"  {c.name} {c.version}: {c.patch_note}", style="dim"))
+        if len(outdated) > 10:
+            console.print(Text(f"  … y {len(outdated) - 10} más", style="dim"))
     shown = {"unused_ignore"}
     for p in report.problems:
         if p.code in shown:

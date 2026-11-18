@@ -44,6 +44,10 @@ export function makeComponent(fields) {
     unresolvedReason: fields.unresolvedReason ?? null,
     status: fields.status ?? ComponentStatus.CLEAN,
     error: fields.error ?? null,
+    latest: null, // the browser demo does not query package registries
+    latestVulnerable: null,
+    patchStatus: 'no_known_vulnerabilities',
+    patchNote: '',
   }
 }
 

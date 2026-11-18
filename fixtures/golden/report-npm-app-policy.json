@@ -24,7 +24,16 @@
     },
     "unresolved": 1,
     "errors": 0,
-    "private": 0
+    "private": 0,
+    "by_patch_status": {
+      "up_to_date": 0,
+      "outdated": 0,
+      "vulnerable_fix_available": 4,
+      "vulnerable_no_fix": 1,
+      "no_known_vulnerabilities": 2,
+      "insufficient_data": 0,
+      "unidentifiable_version": 1
+    }
   },
   "policy": {
     "violations": [
@@ -41,8 +50,10 @@
   },
   "sources": {
     "osv": "ok",
+    "nvd": "disabled",
     "epss": "ok",
-    "kev": "ok"
+    "kev": "ok",
+    "registries": "disabled"
   },
   "manifests": [
     {
@@ -97,6 +108,8 @@
         "https://example.invalid/advisories/OSV-2099-0001"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "cvss_v3",
       "epss": {
         "score": 0.62,
         "percentile": 0.99
@@ -171,6 +184,8 @@
         "https://example.invalid/advisories/GHSA-dmo1-lp10-0003"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "cvss_v3",
       "epss": {
         "score": 0.002,
         "percentile": 0.41
@@ -249,6 +264,8 @@
         "https://example.invalid/advisories/OSV-2099-0001"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "cvss_v3",
       "epss": {
         "score": 0.62,
         "percentile": 0.99
@@ -325,6 +342,8 @@
         "https://example.invalid/advisories/GHSA-dmo1-ck05-0002"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "advisory_label",
       "epss": null,
       "kev": false,
       "priority": "P2",
@@ -399,6 +418,8 @@
         "https://example.invalid/advisories/GHSA-dmo1-lg14-0004"
       ],
       "published": "2099-01-01T00:00:00Z",
+      "modified": "2099-01-01T00:00:00Z",
+      "severity_source": "advisory_label",
       "epss": null,
       "kev": false,
       "priority": "P3",
@@ -434,6 +455,7 @@
       "ecosystem": "npm",
       "current": "6.2.0",
       "upgrade_to": "6.2.4",
+      "breaking": false,
       "fixes": 1,
       "of": 1,
       "direct": false,
@@ -448,6 +470,7 @@
       "ecosystem": "npm",
       "current": "5.1.0",
       "upgrade_to": "5.1.2",
+      "breaking": false,
       "fixes": 1,
       "of": 1,
       "direct": false,
@@ -462,6 +485,7 @@
       "ecosystem": "npm",
       "current": "0.5.0",
       "upgrade_to": "0.7.0",
+      "breaking": true,
       "fixes": 1,
       "of": 1,
       "direct": false,
@@ -476,6 +500,7 @@
       "ecosystem": "npm",
       "current": "1.4.0",
       "upgrade_to": "1.4.1",
+      "breaking": false,
       "fixes": 1,
       "of": 1,
       "direct": false,
@@ -508,7 +533,11 @@
           "file": "package-lock.json",
           "line": 19
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_fix_available",
+      "patch_note": "upgrade to 1.4.1 (fixes 1 of 1)"
     },
     {
       "name": "acme-cookie",
@@ -531,7 +560,11 @@
           "file": "package-lock.json",
           "line": 23
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_fix_available",
+      "patch_note": "upgrade to 0.7.0 (fixes 1 of 1); major version change: may break compatibility"
     },
     {
       "name": "acme-fork",
@@ -553,7 +586,11 @@
           "file": "package-lock.json",
           "line": 27
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "unidentifiable_version",
+      "patch_note": "non-registry source"
     },
     {
       "name": "acme-qs",
@@ -576,7 +613,11 @@
           "file": "package-lock.json",
           "line": 52
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_fix_available",
+      "patch_note": "upgrade to 5.1.2 (fixes 1 of 1)"
     },
     {
       "name": "acme-qs",
@@ -599,7 +640,11 @@
           "file": "package-lock.json",
           "line": 31
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_fix_available",
+      "patch_note": "upgrade to 6.2.4 (fixes 1 of 1)"
     },
     {
       "name": "acme-router",
@@ -621,7 +666,11 @@
           "file": "package-lock.json",
           "line": 35
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "no_known_vulnerabilities",
+      "patch_note": "latest release not checked"
     },
     {
       "name": "acme-test",
@@ -643,7 +692,11 @@
           "file": "package-lock.json",
           "line": 44
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "no_known_vulnerabilities",
+      "patch_note": "latest release not checked"
     },
     {
       "name": "left-pad-plus",
@@ -665,7 +718,11 @@
           "file": "package-lock.json",
           "line": 57
         }
-      ]
+      ],
+      "latest": null,
+      "latest_vulnerable": null,
+      "patch_status": "vulnerable_no_fix",
+      "patch_note": "1 of 1 advisories have no fixed version"
     }
   ],
   "problems": [

@@ -15,7 +15,16 @@ from typing import Any
 from dep_guard import __version__
 from dep_guard.correlate import recommended_upgrade
 from dep_guard.engine import ScanReport
-from dep_guard.models import Component, ComponentStatus, Finding, FindingStatus, Priority, Severity
+from dep_guard.models import (
+    Component,
+    ComponentStatus,
+    Finding,
+    FindingStatus,
+    PatchStatus,
+    Priority,
+    Severity,
+)
+from dep_guard.patch import is_breaking_upgrade
 
 SCHEMA = "depguard.report/v1"
 
@@ -33,6 +42,10 @@ def component_dict(c: Component) -> dict[str, Any]:
         "error": c.error,
         "paths": c.paths,
         "locations": [{"file": loc.file, "line": loc.line} for loc in c.locations],
+        "latest": c.latest,
+        "latest_vulnerable": c.latest_vulnerable,
+        "patch_status": c.patch_status.value,
+        "patch_note": c.patch_note,
     }
 
 
@@ -58,6 +71,8 @@ def finding_dict(f: Finding) -> dict[str, Any]:
         "fixed_versions": f.fixed_versions,
         "references": f.references,
         "published": f.published,
+        "modified": f.modified,
+        "severity_source": f.severity_source,
         "epss": None if f.epss is None else {"score": f.epss, "percentile": f.epss_percentile},
         "kev": f.kev,
         "priority": f.priority.value,
@@ -86,6 +101,7 @@ def remediation(findings: list[Finding]) -> list[dict[str, Any]]:
                 "ecosystem": comp.ecosystem,
                 "current": comp.version,
                 "upgrade_to": target,
+                "breaking": is_breaking_upgrade(comp.version, target),
                 "fixes": fixes,
                 "of": len(group),
                 "direct": comp.direct,
@@ -114,6 +130,9 @@ def summary(report: ScanReport) -> dict[str, Any]:
         "unresolved": statuses[ComponentStatus.UNRESOLVED],
         "errors": statuses[ComponentStatus.ERROR],
         "private": statuses[ComponentStatus.PRIVATE],
+        "by_patch_status": {
+            s.value: sum(1 for c in report.components if c.patch_status is s) for s in PatchStatus
+        },
     }
 
 

@@ -42,6 +42,8 @@ class Config:
     exclude: list[str] = field(default_factory=list)
     epss: bool = True
     kev: bool = True
+    latest: bool = False  # query official registries for the latest release
+    nvd: bool = False  # NVD CVSS/CWE fallback for advisories without a vector
     timeout: float = 20.0
     retries: int = 3
     cache: bool = True
@@ -64,6 +66,8 @@ _SCHEMA: dict[str, dict[str, type | tuple[type, ...]]] = {
     "sources": {
         "epss": bool,
         "kev": bool,
+        "latest": bool,
+        "nvd": bool,
         "timeout": (int, float),
         "retries": int,
         "cache": bool,
