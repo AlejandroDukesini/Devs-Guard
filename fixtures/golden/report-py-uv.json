@@ -354,7 +354,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "vulnerable_fix_available",
-      "patch_note": "upgrade to 41.0.6 (fixes 1 of 1)"
+      "patch_note": "actualizar a 41.0.6 (corrige 1 de 1)"
     },
     {
       "name": "acme-internal",
@@ -406,7 +406,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "vulnerable_fix_available",
-      "patch_note": "upgrade to 1.0.3 (fixes 1 of 1)"
+      "patch_note": "actualizar a 1.0.3 (corrige 1 de 1)"
     },
     {
       "name": "acme-markup",
@@ -434,7 +434,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "no_known_vulnerabilities",
-      "patch_note": "latest release not checked"
+      "patch_note": "última versión no consultada"
     },
     {
       "name": "acme-templates",
@@ -461,7 +461,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "vulnerable_fix_available",
-      "patch_note": "upgrade to 3.1.4 (fixes 1 of 1)"
+      "patch_note": "actualizar a 3.1.4 (corrige 1 de 1)"
     },
     {
       "name": "acme-web",
@@ -487,7 +487,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "no_known_vulnerabilities",
-      "patch_note": "latest release not checked"
+      "patch_note": "última versión no consultada"
     }
   ],
   "problems": []

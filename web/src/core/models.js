@@ -46,6 +46,7 @@ export function makeComponent(fields) {
     error: fields.error ?? null,
     latest: null, // the browser demo does not query package registries
     latestVulnerable: null,
+    latestNote: null,
     patchStatus: 'no_known_vulnerabilities',
     patchNote: '',
   }

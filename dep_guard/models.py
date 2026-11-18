@@ -103,6 +103,7 @@ class Component:
     error: str | None = None
     latest: str | None = None  # latest stable release in the official registry
     latest_vulnerable: bool | None = None  # None = not checked
+    latest_note: str | None = None  # why the latest release is unknown
     patch_status: PatchStatus = PatchStatus.NO_KNOWN_VULNERABILITIES
     patch_note: str = ""
 

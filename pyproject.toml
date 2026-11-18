@@ -31,7 +31,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Local web interface (`depguard serve`), bound to 127.0.0.1 only.
+web = [
+  "fastapi>=0.115",
+  "uvicorn>=0.34",
+]
 dev = [
+  "fastapi>=0.115",
+  "uvicorn>=0.34",
   "pytest>=9.0",
   "pytest-cov>=7.0",
   "respx>=0.23",
@@ -55,6 +62,8 @@ path = "dep_guard/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["dep_guard"]
+# The local UI is built from web/ (npm run build:local) and is not tracked in git.
+artifacts = ["dep_guard/server/static/**"]
 
 [tool.hatch.build.targets.sdist]
 include = ["dep_guard", "tests", "fixtures", "README.md", "LICENSE", "CHANGELOG.md"]
@@ -63,6 +72,8 @@ include = ["dep_guard", "tests", "fixtures", "README.md", "LICENSE", "CHANGELOG.
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"
 markers = ["network: hits real external APIs (deselected by default in CI unit job)"]
+# Third-party notice from Starlette's TestClient, not about DepGuard code.
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
 
 [tool.coverage.run]
 source = ["dep_guard"]

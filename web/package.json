@@ -17,7 +17,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "quality": "node scripts/quality.mjs",
-    "snapshot": "node scripts/record-snapshot.mjs"
+    "snapshot": "node scripts/record-snapshot.mjs",
+    "build:local": "vite build --config vite.local.config.js"
   },
   "dependencies": {
     "react": "^19.3.0",

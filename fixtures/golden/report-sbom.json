@@ -257,7 +257,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "no_known_vulnerabilities",
-      "patch_note": "latest release not checked"
+      "patch_note": "última versión no consultada"
     },
     {
       "name": "com.acme:acme-json",
@@ -283,7 +283,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "vulnerable_fix_available",
-      "patch_note": "upgrade to 2.9.5 (fixes 1 of 1)"
+      "patch_note": "actualizar a 2.9.5 (corrige 1 de 1)"
     },
     {
       "name": "com.acme:acme-json-core",
@@ -310,7 +310,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "no_known_vulnerabilities",
-      "patch_note": "latest release not checked"
+      "patch_note": "última versión no consultada"
     },
     {
       "name": "@acme/logger",
@@ -336,7 +336,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "vulnerable_fix_available",
-      "patch_note": "upgrade to 1.4.1 (fixes 1 of 1)"
+      "patch_note": "actualizar a 1.4.1 (corrige 1 de 1)"
     }
   ],
   "problems": [

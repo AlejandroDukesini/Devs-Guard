@@ -34,11 +34,11 @@ export function isBreakingUpgrade(current, target) {
 export function classify(component, findings) {
   const status = component.status
   if (status === ComponentStatus.UNRESOLVED)
-    return [PatchStatus.UNIDENTIFIABLE_VERSION, component.unresolvedReason || 'no exact version']
+    return [PatchStatus.UNIDENTIFIABLE_VERSION, component.unresolvedReason || 'sin versión exacta']
   if (status === ComponentStatus.PRIVATE)
-    return [PatchStatus.INSUFFICIENT_DATA, 'private package: not sent to vulnerability sources']
+    return [PatchStatus.INSUFFICIENT_DATA, 'paquete privado: no se envía a las fuentes de vulnerabilidades']
   if (status === ComponentStatus.ERROR)
-    return [PatchStatus.INSUFFICIENT_DATA, `vulnerability lookup failed: ${component.error}`]
+    return [PatchStatus.INSUFFICIENT_DATA, `falló la consulta de vulnerabilidades: ${component.error}`]
 
   const latest = component.latest
   if (status === ComponentStatus.VULNERABLE && findings.length) {
@@ -48,26 +48,30 @@ export function classify(component, findings) {
     let state
     if (unfixed) {
       state = PatchStatus.VULNERABLE_NO_FIX
-      notes.push(`${unfixed} of ${findings.length} advisories have no fixed version`)
-      if (target) notes.push(`${target} fixes ${fixes}`)
+      notes.push(`${unfixed} de ${findings.length} avisos sin versión corregida`)
+      if (target) notes.push(`${target} corrige ${fixes}`)
     } else {
       state = PatchStatus.VULNERABLE_FIX_AVAILABLE
-      notes.push(`upgrade to ${target} (fixes ${fixes} of ${findings.length})`)
+      notes.push(`actualizar a ${target} (corrige ${fixes} de ${findings.length})`)
     }
-    if (target && isBreakingUpgrade(component.version, target)) notes.push('major version change: may break compatibility')
-    if (latest && latest === component.version) notes.push('already the latest release')
-    else if (component.latestVulnerable === true && latest) notes.push(`latest release ${latest} is also affected`)
-    else if (latest && target && (compare(component.ecosystem, target, latest) ?? 0) < 0) notes.push(`latest release is ${latest}`)
+    if (target && isBreakingUpgrade(component.version, target)) notes.push('cambio de versión mayor: puede romper la compatibilidad')
+    if (latest && latest === component.version) notes.push('ya es la última versión publicada')
+    else if (component.latestVulnerable === true && latest) notes.push(`la última versión ${latest} también está afectada`)
+    else if (latest && target && (compare(component.ecosystem, target, latest) ?? 0) < 0) notes.push(`la última versión es ${latest}`)
     return [state, notes.join('; ')]
   }
 
-  if (!latest) return [PatchStatus.NO_KNOWN_VULNERABILITIES, 'latest release not checked']
+  if (!latest)
+    return [
+      PatchStatus.NO_KNOWN_VULNERABILITIES,
+      component.latestNote ? `última versión desconocida: ${component.latestNote}` : 'última versión no consultada',
+    ]
   const order = compare(component.ecosystem, component.version ?? '', latest)
-  if (order === null) return [PatchStatus.NO_KNOWN_VULNERABILITIES, `latest release is ${latest} (versions not comparable)`]
-  if (order >= 0) return [PatchStatus.UP_TO_DATE, `latest release is ${latest}`]
-  let note = `${latest} available`
-  if (isBreakingUpgrade(component.version, latest)) note += ' (major version change)'
-  if (component.latestVulnerable === true) note += `; ${latest} has known advisories`
+  if (order === null) return [PatchStatus.NO_KNOWN_VULNERABILITIES, `la última versión es ${latest} (versiones no comparables)`]
+  if (order >= 0) return [PatchStatus.UP_TO_DATE, `la última versión es ${latest}`]
+  let note = `${latest} disponible`
+  if (isBreakingUpgrade(component.version, latest)) note += ' (cambio de versión mayor)'
+  if (component.latestVulnerable === true) note += `; ${latest} tiene avisos conocidos`
   return [PatchStatus.OUTDATED, note]
 }
 

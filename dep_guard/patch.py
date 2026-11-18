@@ -51,11 +51,20 @@ def is_breaking_upgrade(current: str | None, target: str | None) -> bool | None:
 def classify(component: Component, findings: list[Finding]) -> tuple[PatchStatus, str]:
     status = component.status
     if status is ComponentStatus.UNRESOLVED:
-        return PatchStatus.UNIDENTIFIABLE_VERSION, component.unresolved_reason or "no exact version"
+        return (
+            PatchStatus.UNIDENTIFIABLE_VERSION,
+            component.unresolved_reason or "sin versión exacta",
+        )
     if status is ComponentStatus.PRIVATE:
-        return PatchStatus.INSUFFICIENT_DATA, "private package: not sent to vulnerability sources"
+        return (
+            PatchStatus.INSUFFICIENT_DATA,
+            "paquete privado: no se envía a las fuentes de vulnerabilidades",
+        )
     if status is ComponentStatus.ERROR:
-        return PatchStatus.INSUFFICIENT_DATA, f"vulnerability lookup failed: {component.error}"
+        return (
+            PatchStatus.INSUFFICIENT_DATA,
+            f"falló la consulta de vulnerabilidades: {component.error}",
+        )
 
     latest = component.latest
     if status is ComponentStatus.VULNERABLE and findings:
@@ -64,37 +73,42 @@ def classify(component: Component, findings: list[Finding]) -> tuple[PatchStatus
         notes: list[str] = []
         if unfixed:
             state = PatchStatus.VULNERABLE_NO_FIX
-            notes.append(f"{unfixed} of {len(findings)} advisories have no fixed version")
+            notes.append(f"{unfixed} de {len(findings)} avisos sin versión corregida")
             if target:
-                notes.append(f"{target} fixes {fixes}")
+                notes.append(f"{target} corrige {fixes}")
         else:
             state = PatchStatus.VULNERABLE_FIX_AVAILABLE
-            notes.append(f"upgrade to {target} (fixes {fixes} of {len(findings)})")
+            notes.append(f"actualizar a {target} (corrige {fixes} de {len(findings)})")
         if target and is_breaking_upgrade(component.version, target):
-            notes.append("major version change: may break compatibility")
+            notes.append("cambio de versión mayor: puede romper la compatibilidad")
         if latest and latest == component.version:
-            notes.append("already the latest release")
+            notes.append("ya es la última versión publicada")
         elif component.latest_vulnerable is True and latest:
-            notes.append(f"latest release {latest} is also affected")
+            notes.append(f"la última versión {latest} también está afectada")
         elif latest and target and (compare(component.ecosystem, target, latest) or 0) < 0:
-            notes.append(f"latest release is {latest}")
+            notes.append(f"la última versión es {latest}")
         return state, "; ".join(notes)
 
     if not latest:
-        return PatchStatus.NO_KNOWN_VULNERABILITIES, "latest release not checked"
+        if component.latest_note:
+            return (
+                PatchStatus.NO_KNOWN_VULNERABILITIES,
+                f"última versión desconocida: {component.latest_note}",
+            )
+        return PatchStatus.NO_KNOWN_VULNERABILITIES, "última versión no consultada"
     order = compare(component.ecosystem, component.version or "", latest)
     if order is None:
         return (
             PatchStatus.NO_KNOWN_VULNERABILITIES,
-            f"latest release is {latest} (versions not comparable)",
+            f"la última versión es {latest} (versiones no comparables)",
         )
     if order >= 0:
-        return PatchStatus.UP_TO_DATE, f"latest release is {latest}"
-    note = f"{latest} available"
+        return PatchStatus.UP_TO_DATE, f"la última versión es {latest}"
+    note = f"{latest} disponible"
     if is_breaking_upgrade(component.version, latest):
-        note += " (major version change)"
+        note += " (cambio de versión mayor)"
     if component.latest_vulnerable is True:
-        note += f"; {latest} has known advisories"
+        note += f"; {latest} tiene avisos conocidos"
     return PatchStatus.OUTDATED, note
 
 

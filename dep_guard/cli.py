@@ -34,7 +34,7 @@ from dep_guard.models import Priority
 from dep_guard.reporters import FORMATS, cyclonedx, json_report, sarif, spdx, table
 from dep_guard.sources.cache import Cache
 
-SUBCOMMANDS = {"scan", "sbom", "formats", "cache"}
+SUBCOMMANDS = {"scan", "sbom", "formats", "cache", "serve"}
 SUPPORTED_FILES = {
     "npm-package-lock": "package-lock.json, npm-shrinkwrap.json (v2/v3) - transitive",
     "pnpm-lock": "pnpm-lock.yaml (v5, v6, v9; workspaces) - transitive",
@@ -144,6 +144,26 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_cache = sub.add_parser("cache", help="manage the local cache")
     p_cache.add_argument("action", choices=["clear", "path"])
+
+    p_serve = sub.add_parser(
+        "serve",
+        help="open the local web interface (127.0.0.1 only; needs devs-guard[web])",
+    )
+    p_serve.add_argument(
+        "--root",
+        action="append",
+        metavar="DIR",
+        help="folder the interface may scan (repeatable; default: your home folder)",
+    )
+    p_serve.add_argument("--port", type=int, default=8765, help="port (0 = any free port)")
+    p_serve.add_argument(
+        "--no-browser", action="store_true", help="print the URL instead of opening it"
+    )
+    p_serve.add_argument(
+        "--token-file",
+        type=Path,
+        help="also write the session URL (with its token) to this file, for automation",
+    )
     return parser
 
 
@@ -182,6 +202,25 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "formats":
         for adapter in ADAPTERS:
             print(f"{adapter.id:18} {SUPPORTED_FILES.get(adapter.id, '')}")
+        return EXIT_PASS
+    if args.command == "serve":
+        from dep_guard.server import ServeError, serve  # noqa: PLC0415 - optional extra
+
+        if not 0 <= args.port <= 65535:
+            print("error: --port must be between 0 and 65535", file=sys.stderr)
+            return EXIT_TOOL_ERROR
+        try:
+            serve(
+                args.root or [str(Path.home())],
+                args.port,
+                not args.no_browser,
+                token_file=args.token_file,
+            )
+        except ServeError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return EXIT_TOOL_ERROR
+        except KeyboardInterrupt:
+            pass
         return EXIT_PASS
     if args.command == "cache":
         cache = Cache()

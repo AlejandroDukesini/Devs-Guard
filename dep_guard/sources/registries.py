@@ -42,7 +42,7 @@ from dep_guard.versions import compare_semver, is_semver
 
 DAY = 24 * 3600
 CONCURRENCY = 8
-NOT_FOUND = "not found in the public registry"
+NOT_FOUND = "no existe en el registro público"
 # Maven qualifiers that mark a pre-release ("33.0.0-jre" or "5.6.Final" are stable).
 _MAVEN_PRE = re.compile(
     r"(?i)(?:^|[-.])(alpha|beta|rc|cr|milestone|preview|snapshot|ea|dev|a|b|m)[-.]?\d*(?=$|[-.])"
@@ -219,7 +219,7 @@ class RegistrySource:
         pending: dict[tuple[str, str], list[Component]] = {}
         for comp in components:
             if comp.ecosystem not in FETCHERS:
-                outcome.notes[comp.key] = f"no registry lookup for {comp.ecosystem}"
+                outcome.notes[comp.key] = f"sin consulta de registro para {comp.ecosystem}"
                 continue
             pending.setdefault((comp.ecosystem, comp.name), []).append(comp)
 
@@ -230,19 +230,19 @@ class RegistrySource:
             if isinstance(cached, dict):
                 value = cached
             elif self._http is None:
-                value = {"note": "latest version not available offline"}
+                value = {"note": "no disponible sin conexión"}
             else:
                 async with sem:
                     try:
                         found = await FETCHERS[eco](self._http, name)
-                        value = {"version": found} if found else {"note": "no stable release"}
+                        value = {"version": found} if found else {"note": "sin versión estable"}
                         self._cache.set("latest", cache_key, value)
                     except LookupError as exc:
                         value = {"note": str(exc)}
                         self._cache.set("latest", cache_key, value)
                     except (SourceError, ValueError, AttributeError) as exc:
                         outcome.errors += 1
-                        value = {"note": f"registry lookup failed: {clean(str(exc), 120)}"}
+                        value = {"note": f"falló la consulta al registro: {clean(str(exc), 120)}"}
             for comp in comps:
                 if isinstance(value.get("version"), str):
                     outcome.latest[comp.key] = value["version"]

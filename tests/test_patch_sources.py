@@ -102,37 +102,39 @@ def test_every_patch_state_with_its_reason() -> None:
 
     assert classify(comp(), []) == (
         PatchStatus.NO_KNOWN_VULNERABILITIES,
-        "latest release not checked",
+        "última versión no consultada",
     )
     assert classify(comp(latest="1.0.0"), [])[0] is PatchStatus.UP_TO_DATE
     assert classify(comp("1.1.0", latest="1.0.0"), [])[0] is PatchStatus.UP_TO_DATE
     state, note = classify(comp(latest="2.1.0"), [])
-    assert (state, note) == (PatchStatus.OUTDATED, "2.1.0 available (major version change)")
+    assert (state, note) == (PatchStatus.OUTDATED, "2.1.0 disponible (cambio de versión mayor)")
 
     vulnerable = comp(status=ComponentStatus.VULNERABLE, latest="1.4.0")
     state, note = classify(
         vulnerable, [finding(vulnerable, ["1.0.2"]), finding(vulnerable, ["1.1.0"])]
     )
     assert state is PatchStatus.VULNERABLE_FIX_AVAILABLE
-    assert note == "upgrade to 1.1.0 (fixes 2 of 2); latest release is 1.4.0"
+    assert note == "actualizar a 1.1.0 (corrige 2 de 2); la última versión es 1.4.0"
 
     state, note = classify(vulnerable, [finding(vulnerable, ["1.1.0"]), finding(vulnerable, [])])
     assert state is PatchStatus.VULNERABLE_NO_FIX
-    assert note.startswith("1 of 2 advisories have no fixed version; 1.1.0 fixes 1")
+    assert note.startswith("1 de 2 avisos sin versión corregida; 1.1.0 corrige 1")
 
 
 def test_latest_published_is_not_latest_safe() -> None:
     c = comp(status=ComponentStatus.VULNERABLE, latest="3.0.0")
     c.latest_vulnerable = True
     _, note = classify(c, [finding(c, ["1.0.1"])])
-    assert "latest release 3.0.0 is also affected" in note
+    assert "la última versión 3.0.0 también está afectada" in note
 
     outdated = comp(latest="1.5.0")
     outdated.latest_vulnerable = True
-    assert classify(outdated, [])[1] == "1.5.0 available; 1.5.0 has known advisories"
+    assert classify(outdated, [])[1] == "1.5.0 disponible; 1.5.0 tiene avisos conocidos"
 
     on_latest = comp(status=ComponentStatus.VULNERABLE, latest="1.0.0")
-    assert classify(on_latest, [finding(on_latest, [])])[1].endswith("already the latest release")
+    assert classify(on_latest, [finding(on_latest, [])])[1].endswith(
+        "ya es la última versión publicada"
+    )
 
 
 # --------------------------------------------------------------- registries
@@ -253,8 +255,8 @@ def test_not_found_and_failures_are_reported_never_guessed(
     outcome = _latest([ghost, flaky, hex_pkg], tmp_path)
     assert outcome.latest == {}
     assert outcome.notes[ghost.key] == NOT_FOUND
-    assert outcome.notes[flaky.key].startswith("registry lookup failed")
-    assert outcome.notes[hex_pkg.key] == "no registry lookup for Hex"
+    assert outcome.notes[flaky.key].startswith("falló la consulta al registro")
+    assert outcome.notes[hex_pkg.key] == "sin consulta de registro para Hex"
     assert outcome.errors == 1
 
 
@@ -268,7 +270,10 @@ def test_latest_lookups_are_cached_and_work_offline(
     assert offline.latest[requests_comp.key] == "2.32.3"
     assert registries.calls.call_count == calls
     uncached = comp("1.0.0", ecosystem="PyPI", name="other")
-    assert _latest([uncached], tmp_path, online=False).notes[uncached.key].endswith("offline")
+    assert (
+        _latest([uncached], tmp_path, online=False).notes[uncached.key]
+        == "no disponible sin conexión"
+    )
 
 
 def test_registry_hosts_are_allowlisted_and_redirects_refused(tmp_path: Path) -> None:
@@ -320,11 +325,14 @@ def test_scan_with_latest_distinguishes_every_state(
     qs = by[("acme-qs", "6.2.0")]
     assert qs.latest == "6.9.0" and qs.latest_vulnerable is True
     assert qs.patch_status is PatchStatus.VULNERABLE_FIX_AVAILABLE
-    assert "latest release 6.9.0 is also affected" in qs.patch_note
+    assert "la última versión 6.9.0 también está afectada" in qs.patch_note
     assert by[("acme-router", "4.1.2")].patch_status is PatchStatus.UP_TO_DATE
     test_pkg = by[("acme-test", "2.3.0")]
     assert (test_pkg.patch_status, test_pkg.latest_vulnerable) == (PatchStatus.OUTDATED, False)
     assert report.sources["registries"] == "ok"
+    # A package missing from the public registry says so (dependency-confusion signal).
+    cookie = by[("acme-cookie", "0.5.0")]
+    assert cookie.latest is None and cookie.latest_note == "no existe en el registro público"
 
 
 # --------------------------------------------------------------------- NVD

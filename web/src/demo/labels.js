@@ -48,7 +48,42 @@ export const STATUS_LABEL = {
   error: 'no comprobada',
 }
 
-export const SOURCE_LABEL = { osv: 'OSV.dev', epss: 'FIRST EPSS', kev: 'CISA KEV' }
+export const SOURCE_LABEL = {
+  osv: 'OSV.dev',
+  nvd: 'NVD',
+  epss: 'FIRST EPSS',
+  kev: 'CISA KEV',
+  registries: 'Registros oficiales',
+}
+
+// Remediation state of each dependency (report field `patch_status`), most urgent first.
+export const PATCH_ORDER = [
+  'vulnerable_no_fix',
+  'vulnerable_fix_available',
+  'insufficient_data',
+  'unidentifiable_version',
+  'outdated',
+  'no_known_vulnerabilities',
+  'up_to_date',
+]
+export const PATCH_LABEL = {
+  vulnerable_no_fix: 'vulnerable sin parche',
+  vulnerable_fix_available: 'vulnerable con parche',
+  insufficient_data: 'sin datos suficientes',
+  unidentifiable_version: 'versión no identificable',
+  outdated: 'desactualizada',
+  no_known_vulnerabilities: 'sin avisos conocidos',
+  up_to_date: 'actualizada',
+}
+export const PATCH_STYLE = {
+  vulnerable_no_fix: 'bg-red-600 text-white',
+  vulnerable_fix_available: 'bg-orange-500 text-white',
+  insufficient_data: 'bg-fuchsia-100 text-fuchsia-900 dark:bg-fuchsia-950 dark:text-fuchsia-200',
+  unidentifiable_version: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200',
+  outdated: 'bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200',
+  no_known_vulnerabilities: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
+  up_to_date: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200',
+}
 
 export function sourceState(value) {
   if (value === 'ok') return { ok: true, text: 'ok' }

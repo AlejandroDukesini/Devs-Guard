@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { PRIORITIES } from '../core/models.js'
 import { EXPORTS, exportReport } from '../demo/exports.js'
 import { PRIORITY_MEANING, SOURCE_LABEL, STATUS_LABEL, VERDICT, sourceState } from '../demo/labels.js'
+import Dependencies from './Dependencies.jsx'
 import FindingRow, { Priority } from './FindingRow.jsx'
 import { AlertIcon, CheckIcon, DownloadIcon, Spinner } from './Icons.jsx'
 
@@ -107,7 +108,20 @@ function NotChecked({ components }) {
   )
 }
 
-export default function Results({ phase, report, error, steps, meta, projectName, onNewScan }) {
+const defaultExport = (kind, report, projectName) => exportReport(kind, report, projectName)
+
+export default function Results({
+  phase,
+  report,
+  error,
+  steps,
+  meta,
+  projectName,
+  onNewScan,
+  exports = EXPORTS,
+  onExport = defaultExport,
+  idleText = 'Elige un ejemplo y pulsa «Escanear»',
+}) {
   const [filter, setFilter] = useState('all')
   const [showIgnored, setShowIgnored] = useState(true)
   const [query, setQuery] = useState('')
@@ -128,7 +142,7 @@ export default function Results({ phase, report, error, steps, meta, projectName
   if (phase === 'idle') {
     return (
       <div className="card flex min-h-80 flex-col items-center justify-center gap-3 p-8 text-center">
-        <p className="font-medium text-slate-900 dark:text-white">Elige un ejemplo y pulsa «Escanear»</p>
+        <p className="font-medium text-slate-900 dark:text-white">{idleText}</p>
       </div>
     )
   }
@@ -166,7 +180,7 @@ export default function Results({ phase, report, error, steps, meta, projectName
           return (
             <span key={k} className="flex items-center gap-1" title={v}>
               {st.ok ? <CheckIcon className="size-3.5 text-emerald-600" /> : <AlertIcon className="size-3.5 text-amber-600" />}
-              {SOURCE_LABEL[k]}: <span className="max-w-60 truncate text-slate-500">{st.text}</span>
+              {SOURCE_LABEL[k] ?? k}: <span className="max-w-60 truncate text-slate-500">{st.text}</span>
             </span>
           )
         })}
@@ -229,11 +243,18 @@ export default function Results({ phase, report, error, steps, meta, projectName
                   corrige {r.fixes} de {r.of}
                   {r.direct === false && r.via.length > 1 ? ` · llega vía ${r.via.slice(0, -1).join(' › ')}` : ''}
                 </span>
+                {r.breaking && (
+                  <span className="text-xs font-medium text-amber-700 dark:text-amber-400" title="Cambio de versión mayor">
+                    ⚠ cambio mayor: revisar compatibilidad
+                  </span>
+                )}
               </li>
             ))}
           </ul>
         </section>
       )}
+
+      <Dependencies components={report.components} counts={report.summary.by_patch_status} />
 
       <NotChecked components={report.components} />
 
@@ -253,7 +274,7 @@ export default function Results({ phase, report, error, steps, meta, projectName
 
       <section className="card flex flex-wrap items-center gap-2 p-4">
         <span className="mr-auto text-sm text-slate-600 dark:text-slate-400">Descargar</span>
-        {EXPORTS.map((e) => (
+        {exports.map((e) => (
           <button
             key={e.id}
             type="button"
@@ -263,7 +284,7 @@ export default function Results({ phase, report, error, steps, meta, projectName
             onClick={async () => {
               setExporting(e.id)
               try {
-                await exportReport(e.id, report, projectName)
+                await onExport(e.id, report, projectName)
               } finally {
                 setExporting(null)
               }

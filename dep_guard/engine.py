@@ -287,6 +287,7 @@ async def _latest(
     candidates: list[Component] = []
     for comp in checkable:
         comp.latest = outcome.latest.get(comp.key)
+        comp.latest_note = outcome.notes.get(comp.key)
         if comp.latest and comp.latest != comp.version:
             candidates.append(replace(comp, version=comp.latest, locations=[], paths=[]))
     # "Latest published" is not "latest safe": ask OSV about the latest release too.

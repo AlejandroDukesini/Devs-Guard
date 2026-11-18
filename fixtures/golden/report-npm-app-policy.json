@@ -537,7 +537,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "vulnerable_fix_available",
-      "patch_note": "upgrade to 1.4.1 (fixes 1 of 1)"
+      "patch_note": "actualizar a 1.4.1 (corrige 1 de 1)"
     },
     {
       "name": "acme-cookie",
@@ -564,7 +564,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "vulnerable_fix_available",
-      "patch_note": "upgrade to 0.7.0 (fixes 1 of 1); major version change: may break compatibility"
+      "patch_note": "actualizar a 0.7.0 (corrige 1 de 1); cambio de versión mayor: puede romper la compatibilidad"
     },
     {
       "name": "acme-fork",
@@ -617,7 +617,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "vulnerable_fix_available",
-      "patch_note": "upgrade to 5.1.2 (fixes 1 of 1)"
+      "patch_note": "actualizar a 5.1.2 (corrige 1 de 1)"
     },
     {
       "name": "acme-qs",
@@ -644,7 +644,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "vulnerable_fix_available",
-      "patch_note": "upgrade to 6.2.4 (fixes 1 of 1)"
+      "patch_note": "actualizar a 6.2.4 (corrige 1 de 1)"
     },
     {
       "name": "acme-router",
@@ -670,7 +670,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "no_known_vulnerabilities",
-      "patch_note": "latest release not checked"
+      "patch_note": "última versión no consultada"
     },
     {
       "name": "acme-test",
@@ -696,7 +696,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "no_known_vulnerabilities",
-      "patch_note": "latest release not checked"
+      "patch_note": "última versión no consultada"
     },
     {
       "name": "left-pad-plus",
@@ -722,7 +722,7 @@
       "latest": null,
       "latest_vulnerable": null,
       "patch_status": "vulnerable_no_fix",
-      "patch_note": "1 of 1 advisories have no fixed version"
+      "patch_note": "1 de 1 avisos sin versión corregida"
     }
   ],
   "problems": [
