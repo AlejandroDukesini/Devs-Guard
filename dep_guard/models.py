@@ -68,7 +68,7 @@ class Priority(StrEnum):
 class PatchStatus(StrEnum):
     """Remediation state of one component (see dep_guard/patch.py)."""
 
-    UP_TO_DATE = "up_to_date"  # no known advisories, installed >= latest stable
+    UP_TO_DATE = "up_to_date"  # no known advisories, installed == latest stable
     OUTDATED = "outdated"  # no known advisories, a newer stable release exists
     VULNERABLE_FIX_AVAILABLE = "vulnerable_fix_available"  # every advisory has a fix
     VULNERABLE_NO_FIX = "vulnerable_no_fix"  # at least one advisory has no fixed version

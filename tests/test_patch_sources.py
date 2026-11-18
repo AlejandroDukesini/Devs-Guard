@@ -105,7 +105,11 @@ def test_every_patch_state_with_its_reason() -> None:
         "última versión no consultada",
     )
     assert classify(comp(latest="1.0.0"), [])[0] is PatchStatus.UP_TO_DATE
-    assert classify(comp("1.1.0", latest="1.0.0"), [])[0] is PatchStatus.UP_TO_DATE
+    # Newer than the latest stable: pre-release or a version that does not exist.
+    assert classify(comp("99.0.0", latest="1.0.0"), []) == (
+        PatchStatus.NO_KNOWN_VULNERABILITIES,
+        "posterior a la última versión estable (1.0.0): pre-release o no publicada",
+    )
     state, note = classify(comp(latest="2.1.0"), [])
     assert (state, note) == (PatchStatus.OUTDATED, "2.1.0 disponible (cambio de versión mayor)")
 

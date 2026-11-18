@@ -7,7 +7,7 @@
 | vulnerable_fix_available   | known advisories, and every one has a fixed version |
 | vulnerable_no_fix          | known advisories, at least one without any fixed version |
 | outdated                   | no known advisories, a newer stable release exists |
-| up_to_date                 | no known advisories, installed >= latest stable release |
+| up_to_date                 | no known advisories, installed == latest stable release |
 | no_known_vulnerabilities   | no known advisories, latest release not checked/comparable |
 
 Rules that keep the answer honest:
@@ -102,7 +102,14 @@ def classify(component: Component, findings: list[Finding]) -> tuple[PatchStatus
             PatchStatus.NO_KNOWN_VULNERABILITIES,
             f"la última versión es {latest} (versiones no comparables)",
         )
-    if order >= 0:
+    if order > 0:
+        # Newer than the latest stable release: a pre-release, or a version that
+        # was never published (typo, internal fork). Never reported as up to date.
+        return (
+            PatchStatus.NO_KNOWN_VULNERABILITIES,
+            f"posterior a la última versión estable ({latest}): pre-release o no publicada",
+        )
+    if order == 0:
         return PatchStatus.UP_TO_DATE, f"la última versión es {latest}"
     note = f"{latest} disponible"
     if is_breaking_upgrade(component.version, latest):

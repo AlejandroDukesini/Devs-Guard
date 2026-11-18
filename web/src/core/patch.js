@@ -68,7 +68,10 @@ export function classify(component, findings) {
     ]
   const order = compare(component.ecosystem, component.version ?? '', latest)
   if (order === null) return [PatchStatus.NO_KNOWN_VULNERABILITIES, `la última versión es ${latest} (versiones no comparables)`]
-  if (order >= 0) return [PatchStatus.UP_TO_DATE, `la última versión es ${latest}`]
+  // Newer than the latest stable release: pre-release or never published.
+  if (order > 0)
+    return [PatchStatus.NO_KNOWN_VULNERABILITIES, `posterior a la última versión estable (${latest}): pre-release o no publicada`]
+  if (order === 0) return [PatchStatus.UP_TO_DATE, `la última versión es ${latest}`]
   let note = `${latest} disponible`
   if (isBreakingUpgrade(component.version, latest)) note += ' (cambio de versión mayor)'
   if (component.latestVulnerable === true) note += `; ${latest} tiene avisos conocidos`
