@@ -145,7 +145,7 @@ async def scan_async(target: str | Path, options: ScanOptions) -> ScanReport:
         )
     )
     components.sort(key=lambda c: (c.ecosystem, c.name, c.version or ""))
-    policy = evaluate(findings, components, config, today, parse_failures)
+    policy = evaluate(findings, components, config, today, parse_failures, len(manifests))
     for msg in policy.unused_ignores:
         problems.append(
             Problem("unused_ignore", msg, Path(config.source).name if config.source else None)
@@ -282,9 +282,16 @@ def parse_files(
         try:
             content = read_text(mf.path)
             result = mf.adapter.parse(content, ParseContext(mf.rel_path, sibling_reader(mf.path)))
-        except (ParseError, DiscoveryError, OSError) as exc:
+        except (ParseError, DiscoveryError, OSError, RecursionError) as exc:
+            # RecursionError: hostile nesting depth in JSON/TOML/YAML (finding DG-04).
+            # It invalidates this file only, never the whole scan.
             failures += 1
-            message = (exc.strerror or "read error") if isinstance(exc, OSError) else str(exc)
+            if isinstance(exc, OSError):
+                message = exc.strerror or "read error"
+            elif isinstance(exc, RecursionError):
+                message = "nesting too deep to parse safely"
+            else:
+                message = str(exc)
             manifests.append(ManifestSummary(mf.rel_path, mf.adapter.id, 0, message))
             problems.append(Problem("parse_error", message, mf.rel_path))
             continue

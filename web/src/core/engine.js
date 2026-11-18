@@ -179,7 +179,7 @@ export async function scan(files, options = {}) {
   components.sort(
     (a, b) => byStr(a.ecosystem, b.ecosystem) || byStr(a.name, b.name) || byStr(a.version ?? '', b.version ?? ''),
   )
-  const policy = evaluate(findings, components, config, today, parseFailures)
+  const policy = evaluate(findings, components, config, today, parseFailures, manifests.length)
   for (const msg of policy.unusedIgnores) problems.push(problem('unused_ignore', msg, config.source))
   timings.risk_policy_ms = ms(t0)
   timings.total_ms = ms(started)

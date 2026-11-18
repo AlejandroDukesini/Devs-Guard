@@ -81,6 +81,7 @@ def evaluate(
     config: Config,
     today: dt.date,
     parse_failures: int = 0,
+    manifest_count: int | None = None,
 ) -> PolicyResult:
     result = apply_ignores(findings, config.ignores, today)
 
@@ -112,6 +113,9 @@ def evaluate(
         result.incomplete_reasons.append(f"{len(errors)} dependencies could not be checked")
     if parse_failures:
         result.incomplete_reasons.append(f"{parse_failures} manifest files could not be parsed")
+    if manifest_count == 0:
+        # Nothing analysed is not evidence of safety (fail closed, finding DG-01).
+        result.incomplete_reasons.append("no supported manifest or lockfile was found")
 
     if result.violations:
         result.verdict = Verdict.FAIL

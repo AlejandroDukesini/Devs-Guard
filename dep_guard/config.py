@@ -103,6 +103,8 @@ def load(path: Path | None, today: dt.date | None = None) -> Config:
         raise ConfigError(f"cannot read config {path}: {exc.strerror}") from None
     except tomllib.TOMLDecodeError as exc:
         raise ConfigError(f"{path.name}: invalid TOML: {exc}") from None
+    except RecursionError:
+        raise ConfigError(f"{path.name}: nesting too deep to parse safely") from None
     cfg = parse(data, today)
     cfg.source = str(path)
     return cfg

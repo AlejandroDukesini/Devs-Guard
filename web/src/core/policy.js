@@ -47,7 +47,7 @@ export function applyIgnores(findings, rules, today) {
   return result
 }
 
-export function evaluate(findings, components, config, today, parseFailures = 0) {
+export function evaluate(findings, components, config, today, parseFailures = 0, manifestCount = null) {
   const result = applyIgnores(findings, config.ignores, today)
   for (const f of findings) {
     if (f.status === 'ignored') continue
@@ -66,6 +66,8 @@ export function evaluate(findings, components, config, today, parseFailures = 0)
   const errors = components.filter((c) => c.status === ComponentStatus.ERROR)
   if (errors.length) result.incompleteReasons.push(`${errors.length} dependencies could not be checked`)
   if (parseFailures) result.incompleteReasons.push(`${parseFailures} manifest files could not be parsed`)
+  // Nothing analysed is not evidence of safety (fail closed, finding DG-01).
+  if (manifestCount === 0) result.incompleteReasons.push('no supported manifest or lockfile was found')
 
   if (result.violations.length) result.verdict = Verdict.FAIL
   else if (result.incompleteReasons.length && config.failOnIncomplete) result.verdict = Verdict.INCOMPLETE

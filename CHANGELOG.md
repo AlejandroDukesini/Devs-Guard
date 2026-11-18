@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Security
+- A scan that finds no supported manifest or lockfile is now `INCOMPLETE`
+  (exit 3) instead of `PASS` (DG-01, fail-open). Same change in the web engine.
+- Hostile nesting depth in a manifest or `depguard.toml` no longer aborts the
+  whole scan with `RecursionError`; only that file is reported as unparsable
+  (DG-04).
+- Web dev dependencies updated to versions without published advisories:
+  vite 8.3.8, undici 8.12.4, zod 4.6.7, minimatch 11.0.9, eslint 10.15.0
+  (DG-05).
+- Initial audit report: `docs/audit/01-auditoria-inicial.md`.
+
 ## [1.0.0b2] - 2026-10-11
 
 ### Added

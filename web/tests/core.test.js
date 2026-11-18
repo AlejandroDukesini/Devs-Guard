@@ -187,3 +187,17 @@ describe('export formats', () => {
     expect(again.findings.map(key).sort()).toEqual(report.findings.map(key).sort())
   })
 })
+
+describe('nothing analysed is never PASS (DG-01)', () => {
+  it('no supported manifest -> INCOMPLETE, exit 3', async () => {
+    const report = await scan(
+      [
+        { path: 'README.md', content: 'hello' },
+        { path: 'src/main.c', content: 'int main(void) { return 0; }' },
+      ],
+      scanOptions(createMockFetch()))
+    expect(report.verdict).toBe('INCOMPLETE')
+    expect(report.exit_code).toBe(3)
+    expect(report.policy.incomplete_reasons).toContain('no supported manifest or lockfile was found')
+  })
+})

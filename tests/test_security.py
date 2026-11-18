@@ -10,7 +10,11 @@ from pathlib import Path
 import httpx
 import pytest
 
+from dep_guard.config import ConfigError
+from dep_guard.config import load as load_config
 from dep_guard.discovery import MAX_FILE_BYTES, DiscoveryError, discover, read_text
+from dep_guard.engine import EXIT_INCOMPLETE, ScanOptions, scan
+from dep_guard.policy import Verdict
 from dep_guard.sources.cache import Cache
 from dep_guard.sources.http import HttpClient, SourceError
 from dep_guard.textutil import clean
@@ -149,3 +153,41 @@ def test_cache_entry_for_other_key_is_rejected(tmp_path: Path) -> None:
     target = cache._file("ns", "b")
     target.write_text(src.read_text())  # simulate collision / tampering
     assert cache.get("ns", "b") is None
+
+
+def test_directory_without_manifests_is_incomplete_not_pass(
+    tmp_path: Path, osv: object, opts: ScanOptions
+) -> None:
+    """DG-01: analysing nothing must never look like "no vulnerabilities"."""
+    (tmp_path / "README.md").write_text("no manifests here\n")
+    report = scan(tmp_path, opts)
+    assert report.policy.verdict is Verdict.INCOMPLETE
+    assert report.exit_code == EXIT_INCOMPLETE
+    assert "no supported manifest or lockfile was found" in report.policy.incomplete_reasons
+
+
+def test_hostile_nesting_invalidates_one_file_not_the_scan(
+    tmp_path: Path, osv: object, opts: ScanOptions
+) -> None:
+    """DG-04: deeply nested JSON used to abort the whole scan with RecursionError."""
+    bad = tmp_path / "bad"
+    bad.mkdir()
+    depth = 200_000
+    (bad / "package-lock.json").write_text(
+        '{"lockfileVersion": 3, "packages": ' + "[" * depth + "]" * depth + "}"
+    )
+    good = tmp_path / "good"
+    good.mkdir()
+    (good / "requirements.txt").write_text("requests==2.31.0\n")
+    report = scan(tmp_path, opts)
+    errors = {m.path: m.error for m in report.manifests if m.error}
+    assert errors == {"bad/package-lock.json": "nesting too deep to parse safely"}
+    assert any(c.name == "requests" for c in report.components)
+    assert report.policy.verdict is Verdict.INCOMPLETE
+
+
+def test_hostile_nesting_in_config_is_a_config_error(tmp_path: Path) -> None:
+    cfg = tmp_path / "depguard.toml"
+    cfg.write_text("a = " + "[" * 100_000 + "]" * 100_000 + "\n")
+    with pytest.raises(ConfigError, match="nesting too deep"):
+        load_config(cfg)
