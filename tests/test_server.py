@@ -246,6 +246,8 @@ def test_history_ids_cannot_address_other_files(client: TestClient, scan_id: str
         json.dumps({"path": "x", "unexpected": True}).encode(),  # extra fields forbidden
         json.dumps({"path": "x", "fail_on": "P9"}).encode(),
         json.dumps({"path": "x", "latest": "yes please"}).encode(),
+        json.dumps({"path": "x", "latest": 1}).encode(),  # strict: no 1 -> True coercion
+        json.dumps({"path": 123}).encode(),
         json.dumps({"path": ""}).encode(),
         json.dumps(["path"]).encode(),
     ],

@@ -74,7 +74,7 @@ EXPORTS: dict[str, tuple[str, str]] = {
 
 
 class ScanRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", strict=True)  # no type coercion (V15.3.5)
 
     path: str = Field(min_length=1, max_length=4096)
     latest: bool = True

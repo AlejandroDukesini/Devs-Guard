@@ -27,6 +27,10 @@ credited in the advisory unless you prefer otherwise.
 - A failure mode where DepGuard reports **PASS** although it could not check a
   dependency (this is a security bug, not a usability bug).
 - Leaking credentials found in manifests (e.g. index URLs) into output or logs.
+- In the local web app (`depguard serve`): any way for another web page, a
+  DNS-rebinding host or another origin to use the API; reading or listing
+  files outside the allowed folders (`--root`); using a session token after
+  it expired or was ended; exposing the token in logs or responses.
 
 ## What is *not* a vulnerability in DepGuard
 
@@ -34,6 +38,30 @@ credited in the advisory unless you prefer otherwise.
   (<https://github.com/google/osv.dev>, the original advisory database).
 - False positives/negatives caused by documented limitations
   (see [docs/limitations.md](docs/limitations.md)); please open a regular issue.
+
+## Remediation time frames
+
+For vulnerabilities in DepGuard itself and in the components it ships
+(counted from confirmation; tracked in a private GitHub security advisory):
+
+| Severity (CVSS) | Fix released within |
+|---|---|
+| Critical (9.0–10) | 7 days |
+| High (7.0–8.9) | 30 days |
+| Medium (4.0–6.9) | 90 days |
+| Low (< 4.0) | next regular release |
+
+The same time frames apply to third-party components: CI fails on any known
+vulnerability in DepGuard's own lockfiles (docs/devsecops.md), and Dependabot
+proposes updates weekly. An exception requires an entry in
+[docs/security/excepciones.md](docs/security/excepciones.md) with an expiry.
+
+## Status of security validation
+
+DepGuard has been evaluated internally against OWASP ASVS 5.0, NIST SSDF
+(SP 800-218) and OWASP SAMM; see [docs/compliance/](docs/compliance/). This is
+a self-assessment, **not a certification**: no independent penetration test
+or third-party audit has been performed yet.
 
 ## Threat model and hardening
 
