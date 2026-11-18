@@ -34,6 +34,21 @@ All notable changes to this project are documented here. The format follows
   the authenticated local app), hash-checked Python lock for CI and
   releases, wheel content check, local-app e2e. Documented in
   `docs/devsecops.md`; exceptions register in `docs/security/excepciones.md`.
+- Local app hardening from the OWASP ASVS 5.0 evaluation: sessions expire
+  after 60 min idle / 12 h, "Cerrar sesión" revokes the token and clears the
+  browser storage, security events are logged (UTC, no secrets, no log
+  injection), strict request typing, charset on JSON responses.
+- Documentation: README rewritten as the main guide; ASVS 5.0 matrix (345
+  requirements), NIST SSDF, OWASP SAMM, ISO/IEC 27001 notes and a conformity
+  report (internal evaluation, no certification); audit, vulnerability
+  register, test report and final report in `docs/audit/`.
+
+### Fixed
+- A version newer than the latest stable release was reported as up to date.
+- The wheel did not include the local interface (it is built from the sdist).
+- Yarn Berry `patch:` entries produced a wrong package name.
+- The scan lock of the local app could be released before the scan ended.
+- CycloneDX attributed NVD scores to OSV.
 
 ## [1.0.0b2] - 2026-10-11
 

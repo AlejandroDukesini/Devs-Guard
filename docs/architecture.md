@@ -1,53 +1,74 @@
 # Arquitectura
 
 ```text
-           CLI (dep_guard/cli.py)        Librería (dep_guard.scan)
-                         \                 /
-                          ▼               ▼
-                   Engine (dep_guard/engine.py)
-   ┌──────────────┬──────────────┬──────────────┬─────────────┐
-   ▼              ▼              ▼              ▼             ▼
-discovery     adapters/       sources/       correlate     risk + policy
-(archivos     (lockfiles,     osv (estado)   (alias,       (tabla P0–P3,
- seguros)      SBOM → purl)   epss, kev      CVSS, fix)     excepciones)
-                              http, cache
+  CLI (cli.py)     Librería (dep_guard.scan)     App local (server/: FastAPI en 127.0.0.1)
+        \                  |                       /        ▲ API REST + token de sesión
+         ▼                 ▼                      ▼         │
+                    Engine (engine.py)                   Interfaz React (web/src/local,
+   ┌───────────┬────────────┬──────────────┬──────────┬────────────┐  empaquetada en el wheel)
+   ▼           ▼            ▼              ▼          ▼            ▼
+discovery  adapters/     sources/        correlate   risk +      patch
+(archivos  18 formatos   osv (estado)    (alias,     policy      (estado de parche,
+ seguros)  → Component   nvd, epss, kev  CVSS, fix)  (P0–P3,     salto mayor)
+                         registries                   excepciones)
+                         http (allowlist), cache
                                          ▼
-                                 reporters/ (table, json, sarif, cyclonedx)
+                 reporters/ (table, json, sarif, cyclonedx, spdx)
 ```
 
-## Flujo de un escaneo
+## Flujo de un análisis
 
 1. **Descubrimiento** (`discovery.py`): recorre la ruta sin seguir symlinks,
-   descarta `node_modules`, entornos virtuales y directorios ocultos, y elige el
-   adaptador por nombre de archivo. Un lockfile sustituye al `package.json` vecino.
+   descarta `node_modules`, entornos virtuales y directorios ocultos, elige el
+   adaptador por nombre de archivo, aplica las sustituciones (un lockfile
+   sustituye a su manifest) y avisa de los archivos reconocidos sin adaptador.
 2. **Parseo** (`adapters/`): cada adaptador devuelve `Component`s con purl,
-   versión exacta (o motivo de `unresolved`), ámbito prod/dev, si es directa y
-   la ruta más corta desde una dependencia directa (BFS sobre el grafo del lockfile).
-3. **Fusión**: el mismo paquete@versión declarado en varios archivos es un
-   solo componente con varias ubicaciones.
+   versión exacta (o motivo de `unresolved`), ámbito, si es directa y la ruta
+   más corta desde una dependencia directa. Los formatos hostiles se cargan
+   con `adapters/safe_formats.py` (YAML sin alias, XML sin DTD).
+3. **Fusión**: el mismo paquete@versión en varios archivos es un componente
+   con varias ubicaciones.
 4. **Estado** (`sources/osv.py`): `querybatch` con las versiones exactas.
    Error → `ERROR`; sin avisos → `CLEAN`; con avisos → `VULNERABLE`.
-5. **Detalles**: un `GET /v1/vulns/{id}` por aviso único, cacheado por `id@modified`.
-6. **Correlación** (`correlate.py`): agrupa alias en un hallazgo, calcula
-   CVSS, toma la versión corregida del rango que contiene la versión instalada.
-7. **Enriquecimiento** (`sources/enrich.py`): EPSS por CVE, catálogo KEV.
-8. **Riesgo** (`risk.py`): tabla de decisión → prioridad + motivos.
-9. **Política** (`policy.py`): aplica excepciones y decide PASS/FAIL/INCOMPLETE.
-10. **Informe** (`reporters/`).
+5. **Detalles**: `GET /v1/vulns/{id}` por aviso único, cacheado por `id@modified`.
+6. **Correlación** (`correlate.py`): agrupa alias, calcula CVSS, elige la
+   versión corregida del rango que contiene la instalada y registra de dónde
+   sale la severidad.
+7. **NVD** (`sources/nvd.py`, opcional): CVSS/CWE para avisos sin vector.
+8. **Enriquecimiento** (`sources/enrich.py`): EPSS por CVE, catálogo KEV.
+9. **Última versión** (`sources/registries.py`, opcional): registro oficial de
+   cada ecosistema y consulta OSV de esa última versión.
+10. **Riesgo** (`risk.py`): tabla de decisión → prioridad + motivos.
+11. **Parches** (`patch.py`): estado de parche por componente.
+12. **Política** (`policy.py`): excepciones y PASS/FAIL/INCOMPLETE.
+13. **Informe** (`reporters/`).
+
+## Aplicación local
+
+`depguard serve` (extra `web`) abre un socket en `127.0.0.1`, genera un token
+de sesión y sirve la interfaz compilada (`dep_guard/server/static`, generada
+con `npm run build:local`). La API (`server/app.py`) ejecuta el mismo motor en
+un hilo, con un análisis a la vez, y guarda un historial local con las
+exportaciones ya renderizadas. Los controles de seguridad están en
+`server/security.py` y se describen en [security.md](security.md) §3.
 
 ## Decisiones
 
 | Decisión | Motivo |
 |---|---|
-| No reimplementar la comparación de rangos de OSV | OSV ya decide si una versión exacta está afectada; reimplementarlo para 10 ecosistemas añadiría errores. La comparación local solo elige la versión de corrección. |
-| CycloneDX como vía multi-ecosistema | Los generadores oficiales resuelven mejor sus árboles que un parser propio. |
-| Tabla de decisión en vez de puntuación | Una puntuación 0–10 es opaca; una regla se puede revisar, discutir y testear. |
-| Sin servidor, API ni base de datos | Una CLI y una librería cubren los casos de uso (local, CI, PR); un servicio añadiría superficie de ataque y mantenimiento sin valor proporcional. |
-| Español en la salida humana, inglés en identificadores | La salida para personas sigue el idioma del proyecto; JSON/SARIF/códigos son estables y en inglés para integraciones. |
+| No reimplementar la comparación de rangos de OSV | OSV decide si una versión exacta está afectada; la comparación local solo elige la versión de corrección. |
+| Un adaptador por formato, sin ejecutar gestores | Leer lockfiles como texto es reproducible y seguro; ejecutar `mvn`/`gradle`/`npm` ejecutaría código del proyecto. Lo que exige el gestor se marca `unresolved` y se recomienda un SBOM. |
+| CycloneDX como vía multi-ecosistema complementaria | Los generadores oficiales resuelven árboles complejos (Maven) mejor que un parser. |
+| Tabla de decisión en vez de puntuación | Una regla se puede revisar, discutir y testear. |
+| Aplicación local con FastAPI como extra opcional | Interfaz sin desplegar nada ni subir código; el núcleo (CLI) mantiene solo cuatro dependencias. Antes el proyecto no tenía servidor; se añadió porque usar la UI exigía clonar el repositorio. |
+| `latest` y `nvd` opcionales en la CLI | Añaden peticiones (y en NVD, un límite estricto); en CI se activan explícitamente. La app local consulta la última versión por defecto. |
+| Español en la salida humana, inglés en identificadores | JSON/SARIF/códigos son estables y en inglés para integraciones. |
 
 ## Paridad con la demo web
 
-`web/src/core/` es un port en JavaScript del motor. Ambos se validan contra los
-mismos archivos de `fixtures/golden/`; si divergen, falla CI. Se eligió un port
-en lugar de ejecutar el Python original con Pyodide por el tiempo de carga
-(unos 10 MB y varios segundos de arranque). Detalles en [web/README.md](../web/README.md).
+`web/src/core/` es un port en JavaScript del motor para la demo pública del
+navegador. Ambos se validan contra los mismos `fixtures/golden/`; si divergen,
+falla CI. La paridad cubre el comportamiento compartido (informe, riesgo,
+política, estados de parche); los formatos añadidos después (pnpm, yarn, Cargo,
+Go, Composer, NuGet, Maven, Gradle, Pipfile, pyproject) solo existen en el
+motor Python. Detalles en [web/README.md](../web/README.md).

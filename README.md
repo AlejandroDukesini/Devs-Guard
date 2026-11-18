@@ -1,22 +1,54 @@
-# 🛡️ DepGuard
+# 🛡️ DepGuard (DEPS-GUARD)
 
 [![CI](https://github.com/AlejandroDukesini/Devs-Guard/actions/workflows/ci.yml/badge.svg)](https://github.com/AlejandroDukesini/Devs-Guard/actions/workflows/ci.yml)
+[![Security](https://github.com/AlejandroDukesini/Devs-Guard/actions/workflows/security.yml/badge.svg)](https://github.com/AlejandroDukesini/Devs-Guard/actions/workflows/security.yml)
 [![CodeQL](https://github.com/AlejandroDukesini/Devs-Guard/actions/workflows/codeql.yml/badge.svg)](https://github.com/AlejandroDukesini/Devs-Guard/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/AlejandroDukesini/Devs-Guard/badge)](https://scorecard.dev/viewer/?uri=github.com/AlejandroDukesini/Devs-Guard)
 [![Python](https://img.shields.io/badge/python-3.11%E2%80%933.14-blue.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-**Escáner de vulnerabilidades en dependencias que explica qué arreglar primero y por qué.**
+**Analizador de dependencias y vulnerabilidades que explica qué arreglar
+primero, si existe parche y por qué — desde la terminal, en CI o en una
+interfaz web local.**
 
-DepGuard lee tus lockfiles o tu SBOM, consulta [OSV.dev](https://osv.dev),
-prioriza cada vulnerabilidad con CVSS + [EPSS](https://www.first.org/epss/) +
-[CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) y
-el contexto de tu proyecto (producción o desarrollo, directa o transitiva), y
-aplica una política con un resultado determinista para CI:
-`PASS`, `FAIL` o `INCOMPLETE`.
+## 1. Objetivo y problema que resuelve
 
-> 🌐 **Demo web:** pruébalo en el navegador sin instalar nada. El mismo motor, portado a JavaScript y verificado
-> contra los mismos casos de prueba, corre en tu pestaña con datos reales de OSV.dev. Código y despliegue en [`web/`](web/README.md).
+Un proyecto moderno instala cientos de paquetes de terceros. Saber cuáles
+tienen vulnerabilidades conocidas, cuáles tienen parche, cuál es la versión
+mínima que lo corrige y si esa actualización rompe la compatibilidad suele
+exigir varias herramientas y criterio manual. Además, muchas herramientas
+responden "sin vulnerabilidades" cuando en realidad **no pudieron comprobar**
+algo (red caída, formato no soportado).
+
+DepGuard lee los lockfiles y manifests de tu proyecto (sin ejecutarlos),
+consulta fuentes oficiales y entrega:
+
+- el **estado de parche** de cada dependencia (actualizada, desactualizada,
+  vulnerable con parche, vulnerable sin parche, sin datos, versión no
+  identificable);
+- una **prioridad explicada** (P0–P3) que combina CVSS, explotación activa
+  (CISA KEV), probabilidad de explotación (EPSS) y contexto (producción o
+  desarrollo, directa o transitiva);
+- un **veredicto determinista** para CI: `PASS`, `FAIL` o `INCOMPLETE`
+  ("no se pudo comprobar" nunca es "seguro").
+
+## 2. Características
+
+- 18 formatos de 7 ecosistemas nativos (npm, PyPI, crates.io, Go, Packagist,
+  NuGet, Maven) + SBOM CycloneDX para el resto.
+- Dependencias directas y transitivas, con la ruta que explica por qué está
+  instalado cada paquete.
+- Verificación de parches: versión mínima que corrige, última versión estable
+  del registro oficial, y comprobación de si **esa** última versión también
+  está afectada.
+- Aviso de actualizaciones incompatibles (salto de versión mayor).
+- Severidad CVSS v3 calculada localmente, respaldo de NVD (CVSS v3/v4, CWE).
+- Excepciones auditables con motivo y caducidad obligatorios.
+- Salidas: tabla, JSON, SARIF (GitHub code scanning), CycloneDX 1.6 (SBOM +
+  VEX), SPDX 2.3.
+- Aplicación web local (`depguard serve`): selector de carpetas, historial,
+  dependencias y estado de parches, exportación.
+- GitHub Action y librería de Python.
 
 ```text
 $ depguard scan .
@@ -47,105 +79,134 @@ Resultado  P0 0  P1 1  P2 5  P3 0
 Política: FAIL
 ```
 
-<sub>Salida real de un escaneo del 2026-10-05; los datos de OSV cambian a diario.</sub>
+<sub>Salida real de un escaneo del 2026-10-05 con la versión 1.0.0b2; los datos de OSV cambian a diario. Las versiones actuales añaden avisos de cambio de versión mayor y el estado de parche.</sub>
 
----
+## 3. Arquitectura y tecnologías
 
-## ¿Por qué DepGuard y no otra herramienta?
+```text
+CLI · librería · app local (FastAPI en 127.0.0.1 + React)
+                 │
+          motor (Python 3.11+)
+   descubrimiento → adaptadores → OSV → correlación → NVD/EPSS/KEV
+   → última versión (registros) → riesgo → parches → política → informes
+```
 
-Si ya usas **OSV-Scanner**, **Grype**, **Trivy**, **Dependabot** o **Snyk**, probablemente no
-necesitas DepGuard *para detectar*: usan las mismas fuentes de datos u otras más
-amplias y cubren más ecosistemas. DepGuard está pensado para un hueco concreto:
+| Pieza | Tecnología |
+|---|---|
+| Motor y CLI | Python 3.11+ (`httpx`, `rich`, `packaging`, `PyYAML`) |
+| App local | FastAPI + uvicorn (extra opcional `web`), interfaz React 19 + Vite + Tailwind |
+| Demo pública | El motor portado a JavaScript, en el navegador ([web/](web/README.md)) |
+| Pruebas | pytest, vitest, Playwright, OWASP ZAP |
 
-| | DepGuard | OSV-Scanner | Grype | Trivy | Dependabot |
-|---|---|---|---|---|---|
-| Fuente | OSV | OSV | Grype DB | Trivy DB | GitHub Advisory DB |
-| Lockfiles / transitivas | npm, Poetry, uv (+ SBOM) | muchos | vía Syft | muchos | muchos |
-| Entrada SBOM CycloneDX | ✅ | ✅ | ✅ | ✅ | ❌ |
-| SARIF | ✅ | ✅ | ✅ | ✅ | nativo |
-| EPSS + KEV en la priorización | ✅ tabla de decisión **con motivos** | ❌ | ✅ puntuación 0–10 | ❌ | EPSS visible |
-| Excepciones con motivo **y caducidad obligatorios** | ✅ | caducidad opcional | ✅ | ✅ | reglas de triaje |
-| "No se pudo comprobar" ≠ "sin vulnerabilidades" | ✅ exit 3 | — | — | — | — |
-| Contenedores / SO | ❌ | ✅ | ✅ | ✅ | ❌ |
+Detalles: [docs/architecture.md](docs/architecture.md).
 
-<sub>Comparación basada en la documentación pública de cada herramienta (octubre de 2026). Si algo está desactualizado, abre un issue.</sub>
-
-**Úsalo si quieres:** una decisión de CI explicable (*por qué* es P0 y no P2),
-excepciones auditables que caducan, un resultado honesto cuando la red falla y
-una herramienta pequeña en Python que puedes leer entera y usar como librería.
-
-**No lo uses si necesitas:** imágenes de contenedor, más ecosistemas nativos,
-análisis de alcanzabilidad o PRs automáticos de actualización. Para eso existen
-Trivy/Grype, OSV-Scanner, Snyk y Dependabot/Renovate.
-
----
-
-## Instalación
+## 4. Instalación
 
 Requiere Python 3.11 o superior.
 
 ```bash
-pip install devs-guard        # cuando se publique en PyPI (el comando es `depguard`)
-# hasta entonces, desde GitHub:
-pip install "git+https://github.com/AlejandroDukesini/Devs-Guard@Beta"
+pip install devs-guard              # CLI (cuando se publique en PyPI; el comando es `depguard`)
+pip install "devs-guard[web]"       # + interfaz web local
+# hasta la publicación, desde GitHub:
+pip install "devs-guard[web] @ git+https://github.com/AlejandroDukesini/Devs-Guard@Beta"
 ```
 
-## Uso
+> Instalar desde GitHub no incluye la interfaz compilada (se genera en la
+> release). Desde un clon: `cd web && npm ci --ignore-scripts && npm run build:local`.
+
+## 5. Ejecución local
+
+### Interfaz web
+
+```bash
+depguard serve                      # abre http://127.0.0.1:8765/ en tu navegador
+depguard serve --root ~/proyectos   # limita las carpetas que se pueden analizar
+```
+
+1. Elige la carpeta de tu proyecto (o pega su ruta).
+2. Revisa las opciones (última versión, NVD, EPSS, KEV, sin conexión).
+3. Pulsa **Analizar**: verás el veredicto, las vulnerabilidades priorizadas,
+   el estado de parche de cada dependencia y la remediación sugerida.
+4. Descarga el informe (JSON, SARIF, CycloneDX, SPDX). El historial guarda
+   los últimos 50 análisis; «Cerrar sesión» revoca el acceso.
+
+El servidor solo escucha en `127.0.0.1`, exige un token de sesión, rechaza
+otras páginas web y nunca lee fuera de las carpetas permitidas.
+
+### Línea de comandos
 
 ```bash
 depguard scan .                          # directorio: encuentra lockfiles y manifests
-depguard scan package-lock.json          # un archivo
-depguard scan sbom.cdx.json              # SBOM CycloneDX (Maven, Go, Cargo… vía purl)
+depguard scan . --latest                 # + última versión estable y estado de parche
+depguard scan . --nvd                    # + CVSS/CWE de NVD para avisos sin vector
 depguard scan . -f sarif -o depguard.sarif
 depguard scan . -f json  -o report.json
 depguard scan . --fail-on P0             # solo falla con P0
-depguard sbom . -o bom.cdx.json          # SBOM sin consultar vulnerabilidades (offline)
+depguard sbom . -o bom.cdx.json          # SBOM CycloneDX (sin consultar vulnerabilidades)
+depguard sbom . -f spdx -o sbom.spdx.json
 depguard formats                         # archivos soportados
 ```
+
+| Exit code | Significado |
+|---|---|
+| `0` | PASS: política cumplida y todo comprobado |
+| `1` | FAIL: política incumplida |
+| `2` | Error de la herramienta (argumentos, ruta, configuración, fallo interno) |
+| `3` | INCOMPLETE: algo no se pudo comprobar (red, formato no soportado, manifest corrupto, ningún manifest) |
 
 Como librería:
 
 ```python
 from dep_guard import scan
+from dep_guard.engine import ScanOptions
 
-report = scan("path/to/project")
+report = scan("path/to/project", ScanOptions(latest=True))
 print(report.policy.verdict, report.exit_code)
-for f in report.active_findings:
-    print(f.priority, f.id, f.component.name, f.fixed_versions)
+for c in report.components:
+    print(c.name, c.version, c.patch_status, c.patch_note)
 ```
 
-### Exit codes
+## 6. Ecosistemas compatibles
 
-| Código | Significado |
+| Ecosistema | Archivos |
 |---|---|
-| `0` | PASS: política cumplida y todo comprobado |
-| `1` | FAIL: política incumplida |
-| `2` | Error de la herramienta (argumentos, ruta, configuración, fallo interno) |
-| `3` | INCOMPLETE: algo no se pudo comprobar (red, OSV, manifest corrupto) |
+| npm | `package-lock.json`, `npm-shrinkwrap.json`, `pnpm-lock.yaml`, `yarn.lock` (1 y Berry), `package.json` |
+| PyPI | `poetry.lock`, `uv.lock`, `Pipfile.lock`, `requirements*.txt`, `pyproject.toml` |
+| Rust | `Cargo.lock` |
+| Go | `go.mod` |
+| PHP | `composer.lock`, `composer.json` |
+| .NET | `packages.lock.json`, `*.csproj`/`*.fsproj`/`*.vbproj`, `Directory.Packages.props` |
+| Java | `pom.xml` (directas), `gradle.lockfile` |
+| Cualquiera con purl | SBOM CycloneDX JSON |
 
-## Configuración
+Los archivos reconocidos sin adaptador (`Gemfile.lock`, `Cargo.toml` sin
+lock…) se avisan y hacen el resultado `INCOMPLETE`. Detalle:
+[docs/ecosystems.md](docs/ecosystems.md).
 
-`depguard.toml` en la raíz del proyecto (validación estricta: una clave mal
-escrita es un error, no se ignora):
+## 7. Fuentes de vulnerabilidades
 
-```toml
-[policy]
-fail_on_priority = "P1"
-fail_on_kev = true
+| Fuente | Uso |
+|---|---|
+| [OSV.dev](https://osv.dev) | Estado de vulnerabilidad (fuente de verdad); agrega GitHub Security Advisories, PyPA, RustSec, Go y CVE |
+| [NVD](https://nvd.nist.gov/developers) | Respaldo de CVSS v3/v4 y CWE para avisos sin vector (`--nvd`) |
+| [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) | Explotación activa confirmada |
+| [FIRST EPSS](https://www.first.org/epss/) | Probabilidad de explotación en 30 días |
+| Registros oficiales | Última versión estable: PyPI, npm, crates.io, proxy de Go, Packagist, Maven Central, NuGet (`--latest`) |
 
-[sources]
-private_packages = ["@acme/*"]      # nunca se envían a OSV
+Solo se usan APIs oficiales y documentadas; nunca *scraping*.
 
-[[ignore]]
-id = "CVE-2023-32681"
-reason = "No usamos proxies con credenciales; el vector no aplica"
-expires = 2027-01-31                # obligatorio: no hay excepciones permanentes
-owner = "equipo-pagos"
-```
+## 8. Metodología de análisis
 
-Referencia completa: [docs/configuration.md](docs/configuration.md).
-
-## Cómo prioriza
+1. Descubre manifests sin seguir enlaces simbólicos; un lockfile sustituye a
+   su manifest.
+2. Extrae versiones **exactas**; rangos, git o rutas locales quedan como
+   «versión no identificable» con el motivo (nunca se adivina).
+3. Consulta OSV con las versiones exactas; agrupa alias (CVE/GHSA/OSV) en un
+   solo hallazgo; precedencia de severidad: vector CVSS > calificación del
+   aviso > NVD > desconocida (nunca se asume baja).
+4. Elige la versión corregida del rango afectado que contiene la instalada y
+   la actualización mínima que corrige todos los avisos de un paquete.
+5. Prioriza con una tabla de decisión explicable:
 
 | Prioridad | Regla |
 |---|---|
@@ -154,11 +215,59 @@ Referencia completa: [docs/configuration.md](docs/configuration.md).
 | **P2** | MEDIUM o severidad desconocida en producción; HIGH+ solo en desarrollo |
 | **P3** | El resto |
 
-Cada hallazgo incluye los motivos de su prioridad. Lo desconocido nunca
-tranquiliza: ámbito desconocido = producción, severidad desconocida ≥ P2.
-Detalles: [docs/risk-model.md](docs/risk-model.md).
+La severidad técnica (CVSS) y el riesgo contextual (P0–P3) se muestran por
+separado. Detalles: [docs/risk-model.md](docs/risk-model.md).
 
-## CI/CD
+## 9. Seguridad y privacidad
+
+- **Solo lectura**: no instala dependencias ni ejecuta scripts ni gestores
+  de paquetes del proyecto analizado; no modifica ningún archivo.
+- A las fuentes solo se envían ecosistema, nombre y versión.
+  `private_packages` evita enviar paquetes internos; `--offline` no hace
+  ninguna petición.
+- Red: solo HTTPS, solo hosts en una lista cerrada, sin redirecciones.
+- App local: `127.0.0.1`, token de 256 bits en cabecera, protección contra
+  DNS rebinding y peticiones de otros orígenes, carpetas permitidas,
+  caducidad de sesión, CSP estricta, registro de eventos sin secretos.
+
+Modelo de amenazas: [docs/security.md](docs/security.md). Cómo informar de
+una vulnerabilidad: [SECURITY.md](SECURITY.md).
+
+## 10. Pruebas ejecutadas
+
+Última ejecución completa (2026-11-18), con cifras reales:
+
+| Batería | Resultado |
+|---|---|
+| pytest (unitarias, integración, seguridad, adversariales) | 316 superadas, cobertura 88 % |
+| vitest (motor JS y paridad) | 139 superadas |
+| Playwright (demo y app local contra el servidor real) | 20/20 y 4/4 |
+| SAST (bandit, CodeQL), lint y tipos (ruff, mypy `--strict`, eslint) | 0 hallazgos |
+| Secretos (gitleaks, historial completo) | 0 |
+| SCA (DepGuard, OSV-Scanner, npm audit) sobre las dependencias propias | 0 vulnerabilidades |
+| SBOM SPDX/CycloneDX contra los esquemas oficiales | 0 violaciones |
+| DAST (OWASP ZAP autenticado contra `depguard serve`) | 0 alertas High/Medium/Low |
+| Validación cruzada con OSV-Scanner en lockfiles reales | 19/19 y 7/7 avisos coincidentes |
+
+Informe completo: [docs/audit/03-informe-pruebas.md](docs/audit/03-informe-pruebas.md).
+
+## 11. Limitaciones conocidas
+
+- Solo vulnerabilidades **publicadas** y solo para **versiones exactas**.
+- Sin análisis de alcanzabilidad: puede listar vulnerabilidades que tu código no ejecuta.
+- `pom.xml` y proyectos .NET sin lockfile: solo dependencias directas.
+- No analiza imágenes de contenedor ni paquetes del sistema operativo.
+
+Lista completa: [docs/limitations.md](docs/limitations.md).
+
+## 12. Pipeline DevSecOps
+
+Cada push y PR ejecuta lint, tipos, SAST, tests en Python 3.11–3.14, e2e,
+autoescaneo, secretos, SCA independiente, validación de SBOM y DAST; las
+herramientas se verifican por SHA-256 y las dependencias de CI se instalan con
+hashes. Las releases se publican sin tokens (Trusted Publishing), con
+procedencia SLSA firmada, SBOM y sumas de verificación. Política de fallo y
+excepciones: [docs/devsecops.md](docs/devsecops.md).
 
 ```yaml
 - uses: AlejandroDukesini/Devs-Guard@<sha>
@@ -170,46 +279,58 @@ Detalles: [docs/risk-model.md](docs/risk-model.md).
     sarif_file: depguard.sarif
 ```
 
-GitLab, Jenkins y más: [docs/ci-cd.md](docs/ci-cd.md).
+Otras plataformas: [docs/ci-cd.md](docs/ci-cd.md).
 
-## Documentación
+## 13. Estándares evaluados y estado real de validación
+
+| Estándar | Resultado de la evaluación interna |
+|---|---|
+| OWASP ASVS 5.0 (L2, app local) | 107 de 114 requisitos L1+L2 aplicables cumplidos; 6 parciales y 1 no cumplido, con acción o desviación documentada |
+| NIST SSDF (SP 800-218) | 14 de 19 prácticas cumplidas |
+| OWASP SAMM 2 | Madurez media 1,7 / 3 |
+| ISO/IEC 27001:2022 | Controles del Anexo A que el proyecto apoya (no certificable como producto) |
+
+**DepGuard no está certificado.** Son evaluaciones internas con evidencia en
+el repositorio; falta una prueba de penetración y una revisión independientes.
+Ver [docs/compliance/informe-conformidad.md](docs/compliance/informe-conformidad.md).
+
+## 14. ¿Cuándo usar DepGuard y cuándo otra herramienta?
+
+| | DepGuard | OSV-Scanner | Grype | Trivy | Dependabot |
+|---|---|---|---|---|---|
+| Fuente | OSV (+NVD, KEV, EPSS) | OSV | Grype DB | Trivy DB | GitHub Advisory DB |
+| Lockfiles / transitivas | 7 ecosistemas (+ SBOM) | muchos | vía Syft | muchos | muchos |
+| Estado de parche y última versión | ✅ | parcial | ❌ | ❌ | ✅ (PRs) |
+| EPSS + KEV en la priorización | ✅ con motivos | ❌ | ✅ puntuación | ❌ | EPSS visible |
+| "No se pudo comprobar" ≠ "sin vulnerabilidades" | ✅ exit 3 | — | — | — | — |
+| Interfaz web local | ✅ | ❌ | ❌ | ❌ | web de GitHub |
+| Contenedores / SO | ❌ | ✅ | ✅ | ✅ | ❌ |
+
+<sub>Basado en la documentación pública de cada herramienta (noviembre de 2026). Si algo está desactualizado, abre un issue.</sub>
+
+## 15. Documentación
 
 | | |
 |---|---|
 | [Arquitectura](docs/architecture.md) | Flujo interno y decisiones de diseño |
-| [Ecosistemas](docs/ecosystems.md) | Archivos soportados y cómo cubrir el resto con SBOM |
+| [Ecosistemas](docs/ecosystems.md) | Archivos soportados y cómo cubrir el resto |
 | [Modelo de riesgo](docs/risk-model.md) | Tabla P0–P3 y códigos de motivo |
-| [Configuración](docs/configuration.md) | Políticas, excepciones, paquetes privados |
-| [Formatos de salida](docs/output-formats.md) | JSON, SARIF, CycloneDX/VEX |
-| [CI/CD](docs/ci-cd.md) | GitHub Actions, GitLab, Jenkins, exit codes |
-| [Seguridad](docs/security.md) | Modelo de amenazas del propio escáner |
-| [Calidad y certificado](docs/quality.md) | Suite de pruebas de la web, informe sellado y certificado |
+| [Configuración](docs/configuration.md) | Políticas, excepciones, paquetes privados, app local |
+| [Formatos de salida](docs/output-formats.md) | JSON, SARIF, CycloneDX/VEX, SPDX, estados de parche |
+| [CI/CD](docs/ci-cd.md) · [DevSecOps](docs/devsecops.md) | Integración y pipeline de seguridad |
+| [Seguridad](docs/security.md) · [Excepciones](docs/security/excepciones.md) | Modelo de amenazas y riesgos residuales |
+| [Auditoría](docs/audit/) | Auditoría inicial, registro de vulnerabilidades, informe de pruebas, informe final |
+| [Cumplimiento](docs/compliance/) | ASVS 5.0, NIST SSDF, SAMM, ISO 27001, informe de conformidad |
 | [**Limitaciones**](docs/limitations.md) | Qué no detecta y cuándo se equivoca |
-| [Benchmarks](docs/benchmark.md) | Metodología (sin cifras inventadas) |
-| [Releases](docs/releasing.md) | Versionado, firma y verificación |
+| [Releases](docs/releasing.md) · [Changelog](CHANGELOG.md) | Versionado, firma y verificación |
 
-## Limitaciones (resumen)
+## 16. Contribuciones y contacto
 
-- Solo vulnerabilidades **publicadas** en OSV.dev y solo para **versiones exactas**.
-- Sin análisis de alcanzabilidad: puede listar vulnerabilidades que tu código no ejecuta.
-- `yarn.lock`, `pnpm-lock.yaml`, Maven y Gradle nativos aún no: usa un SBOM CycloneDX.
-- No analiza imágenes de contenedor ni paquetes del sistema operativo.
+Las contribuciones son bienvenidas: [CONTRIBUTING.md](CONTRIBUTING.md). Las
+vulnerabilidades del propio DepGuard se informan en privado (nunca en un
+issue público): [SECURITY.md](SECURITY.md). Los tests usan solo datos
+ficticios (`acme-*`, `CVE-2099-*`).
 
-Lista completa: [docs/limitations.md](docs/limitations.md).
-
-## Desarrollo
-
-```bash
-pip install -e ".[dev]"
-ruff check dep_guard tests && mypy && bandit -q -c pyproject.toml -r dep_guard && pytest --cov
-```
-
-Demo web: `cd web && npm ci --ignore-scripts && npm test && npm run dev` (ver [web/README.md](web/README.md)).
-
-Los tests no usan datos reales de vulnerabilidades: `fixtures/` contiene paquetes
-y CVE ficticios (`acme-*`, `CVE-2099-*`). Ver [CONTRIBUTING.md](CONTRIBUTING.md)
-y [SECURITY.md](SECURITY.md).
-
-## Licencia
+## 17. Licencia
 
 [MIT](LICENSE)

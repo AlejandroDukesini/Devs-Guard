@@ -15,6 +15,8 @@ exclude = ["examples/**", "fixtures/**"]   # globs relativos a la raíz
 [sources]
 epss = true             # consultar FIRST EPSS
 kev = true              # consultar CISA KEV
+latest = false          # última versión estable en los registros oficiales (--latest)
+nvd = false             # CVSS v3/v4 y CWE de NVD para avisos sin vector (--nvd)
 timeout = 20            # segundos por petición (1–300)
 retries = 3             # reintentos ante 429/5xx/red (0–10)
 cache = true
@@ -68,5 +70,27 @@ los nombres de paquetes internos. Esas dependencias aparecen con estado
 | `--fail-on P0..P3/none` | Sustituye `policy.fail_on_priority` |
 | `--allow-incomplete` | Equivale a `fail_on_incomplete = false` |
 | `--no-epss` / `--no-kev` | Desactiva el enriquecimiento |
+| `--latest` | Consulta la última versión estable (PyPI, npm, crates.io, Go, Packagist, Maven Central, NuGet) y si esa versión también está afectada |
+| `--nvd` | Respaldo de NVD para severidad y CWE; `NVD_API_KEY` sube el límite de peticiones |
 | `--offline` | Solo caché local; lo no cacheado queda como error (exit 3) |
 | `--no-cache` | No lee ni escribe la caché |
+
+## Variables de entorno
+
+| Variable | Efecto |
+|---|---|
+| `DEPGUARD_CACHE_DIR` | Carpeta de caché (y del historial de `depguard serve`) |
+| `NVD_API_KEY` | Clave de la API de NVD (opcional; solo se envía a NVD) |
+| `NO_COLOR` | Desactiva los colores |
+
+## Aplicación local (`depguard serve`)
+
+| Opción | Efecto |
+|---|---|
+| `--root DIR` | Carpeta que la interfaz puede analizar (repetible; por defecto la carpeta personal) |
+| `--port N` | Puerto en `127.0.0.1` (por defecto 8765; `0` = libre) |
+| `--no-browser` | No abre el navegador; imprime la URL |
+| `--token-file FILE` | Escribe también la URL con el token en `FILE` (automatización; permisos de usuario) |
+
+El servidor nunca escucha fuera de `127.0.0.1`. La sesión caduca tras 60
+minutos sin actividad o 12 horas en total (ver `docs/security.md`).
