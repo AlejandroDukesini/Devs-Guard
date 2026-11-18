@@ -1,0 +1,5 @@
+{
+  "name": "yarn-v1-app",
+  "dependencies": { "lodash": "^4.17.0", "left-pad": "file:./vendor/left-pad" },
+  "devDependencies": { "minimist": "^1.2.0" }
+}

@@ -1,0 +1,70 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  apps/web:
+    dependencies:
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+      shared:
+        specifier: workspace:*
+        version: link:../../packages/shared
+      lodash-es:
+        specifier: github:lodash/lodash#es
+        version: https://codeload.github.com/lodash/lodash/tar.gz/abc123
+    devDependencies:
+      vitest:
+        specifier: ^1.0.0
+        version: 1.0.0
+
+packages:
+
+  js-tokens@4.0.0:
+    resolution: {integrity: sha512-aaaa}
+
+  lodash-es@https://codeload.github.com/lodash/lodash/tar.gz/abc123:
+    resolution: {tarball: https://codeload.github.com/lodash/lodash/tar.gz/abc123}
+    version: 4.17.21
+
+  loose-envify@1.4.0:
+    resolution: {integrity: sha512-bbbb}
+    hasBin: true
+
+  react-dom@18.2.0:
+    resolution: {integrity: sha512-cccc}
+    peerDependencies:
+      react: ^18.2.0
+
+  react@18.2.0:
+    resolution: {integrity: sha512-dddd}
+
+  vitest@1.0.0:
+    resolution: {integrity: sha512-eeee}
+
+snapshots:
+
+  js-tokens@4.0.0: {}
+
+  lodash-es@https://codeload.github.com/lodash/lodash/tar.gz/abc123: {}
+
+  loose-envify@1.4.0:
+    dependencies:
+      js-tokens: 4.0.0
+
+  react-dom@18.2.0(react@18.2.0):
+    dependencies:
+      loose-envify: 1.4.0
+      react: 18.2.0
+
+  react@18.2.0:
+    dependencies:
+      loose-envify: 1.4.0
+
+  vitest@1.0.0: {}

@@ -1,0 +1,5 @@
+{
+  "name": "berry-app",
+  "dependencies": { "axios": "^0.21.0" },
+  "devDependencies": { "typescript": "patch:typescript@^5.0.0#~builtin<compat/typescript>" }
+}

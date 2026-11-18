@@ -1,0 +1,11 @@
+{
+    "_meta": {"hash": {"sha256": "0000"}, "pipfile-spec": 6, "requires": {}, "sources": []},
+    "default": {
+        "asgiref": {"hashes": ["sha256:aaaa"], "version": "==3.3.4"},
+        "django": {"hashes": ["sha256:bbbb"], "index": "pypi", "version": "==3.2.0"},
+        "mylib": {"editable": true, "path": "./mylib"}
+    },
+    "develop": {
+        "pytest": {"hashes": ["sha256:cccc"], "index": "pypi", "version": "==7.0.0"}
+    }
+}

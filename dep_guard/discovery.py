@@ -17,13 +17,16 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-from dep_guard.adapters import SUPERSEDED_BY, Adapter, adapter_for, sniff_adapter
+from dep_guard.adapters import NOT_ANALYSED, SUPERSEDED_BY, Adapter, adapter_for, sniff_adapter
 from dep_guard.models import Problem
 
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_FILES = 1000
 MAX_DEPTH = 12
-SIBLING_ALLOWLIST = frozenset({"pyproject.toml"})
+# Files an adapter may read next to the one it parses (direct/dev information).
+SIBLING_ALLOWLIST = frozenset(
+    {"pyproject.toml", "package.json", "Cargo.toml", "composer.json", "Pipfile"}
+)
 SKIP_DIRS = frozenset(
     {
         "node_modules",
@@ -110,6 +113,7 @@ def discover(
 
     patterns = list(exclude)
     found: list[ManifestFile] = []
+    lock_dirs: dict[str, set[str]] = {}  # lockfile name -> directories (rel) holding it
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
         current = Path(dirpath)
         rel_dir = current.relative_to(root).as_posix()
@@ -123,15 +127,23 @@ def discover(
             and not (current / d).is_symlink()
         )
         names = set(filenames)
+        for lock in names:
+            lock_dirs.setdefault(lock, set()).add(rel_dir)
         for filename in sorted(filenames):
-            adapter = adapter_for(filename, current.name)
-            if adapter is None:
-                continue
-            if any(sup in names for sup in SUPERSEDED_BY.get(filename, ())):
-                continue
             path = current / filename
             rel = path.relative_to(root).as_posix()
             if any(fnmatch.fnmatch(rel, p) for p in patterns):
+                continue
+            adapter = adapter_for(filename, current.name)
+            if adapter is None:
+                if filename in NOT_ANALYSED:
+                    needed, advice = NOT_ANALYSED[filename]
+                    if needed is None or not _in_tree(lock_dirs.get(needed, set()), rel_dir):
+                        problems.append(
+                            Problem("manifest_not_analysed", f"{filename}: {advice}", rel)
+                        )
+                continue
+            if any(sup in names for sup in SUPERSEDED_BY.get(adapter.id, ())):
                 continue
             if path.is_symlink():
                 problems.append(Problem("symlink_skipped", "symlinked manifest not followed", rel))
@@ -143,3 +155,9 @@ def discover(
                 )
                 return root, found, problems
     return root, found, problems
+
+
+def _in_tree(dirs: set[str], rel_dir: str) -> bool:
+    """True when `rel_dir` or one of its parents (within the scan root) is in `dirs`."""
+    parts = [] if rel_dir == "." else rel_dir.split("/")
+    return any(("/".join(parts[:i]) or ".") in dirs for i in range(len(parts) + 1))

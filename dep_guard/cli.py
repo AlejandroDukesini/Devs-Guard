@@ -37,10 +37,22 @@ from dep_guard.sources.cache import Cache
 SUBCOMMANDS = {"scan", "sbom", "formats", "cache"}
 SUPPORTED_FILES = {
     "npm-package-lock": "package-lock.json, npm-shrinkwrap.json (v2/v3) - transitive",
+    "pnpm-lock": "pnpm-lock.yaml (v5, v6, v9; workspaces) - transitive",
+    "yarn-lock": "yarn.lock (Yarn 1 and Yarn 2+ Berry) - transitive",
     "npm-package-json": "package.json (only when no lockfile is present) - direct only",
     "poetry-lock": "poetry.lock (+ pyproject.toml for direct/dev) - transitive",
     "uv-lock": "uv.lock - transitive",
+    "pipfile-lock": "Pipfile.lock (+ Pipfile for direct) - transitive",
     "pip-requirements": "requirements*.txt, requirements/*.txt - exact pins only",
+    "pyproject": "pyproject.toml (PEP 621, PEP 735, Poetry; no lockfile present) - direct only",
+    "cargo-lock": "Cargo.lock (+ Cargo.toml for dev) - transitive",
+    "go-mod": "go.mod (build list incl. // indirect, replace honoured) - transitive",
+    "composer-lock": "composer.lock (+ composer.json for direct) - transitive",
+    "composer-json": "composer.json (only when no composer.lock is present) - direct only",
+    "nuget-lock": "packages.lock.json - transitive",
+    "nuget-project": "*.csproj/*.fsproj/*.vbproj, Directory.Packages.props - direct only",
+    "maven-pom": "pom.xml (literal versions and local properties) - direct only",
+    "gradle-lockfile": "gradle.lockfile, buildscript-gradle.lockfile - transitive",
     "cyclonedx-json": "*.cdx.json, bom.json, sbom.json - any purl ecosystem OSV supports",
 }
 

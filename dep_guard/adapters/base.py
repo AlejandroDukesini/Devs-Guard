@@ -12,7 +12,9 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from dep_guard.models import Component, Location, Problem, Scope
+from dep_guard import purl
+from dep_guard.models import Component, ComponentStatus, Location, Problem, Scope
+from dep_guard.textutil import clean
 
 
 class ParseError(Exception):
@@ -81,3 +83,39 @@ def walk_graph(
 
 def location(ctx: ParseContext, line: int | None) -> list[Location]:
     return [Location(ctx.rel_path, line)]
+
+
+def make_component(
+    ecosystem: str,
+    name: str,
+    version: str | None,
+    ctx: ParseContext,
+    line: int | None,
+    info: GraphInfo | None = None,
+    *,
+    direct: bool | None = None,
+    scope: Scope | None = None,
+    unresolved_reason: str | None = None,
+) -> Component:
+    """Build a Component; a missing version always carries an explicit reason.
+
+    `info` (graph position) provides direct/scope/path; explicit `direct` and
+    `scope` arguments take precedence because some formats record them
+    authoritatively (npm `dev` flags, composer `packages-dev`...).
+    """
+    safe_name = clean(name, 300)
+    comp = Component(
+        ecosystem=ecosystem,
+        name=safe_name,
+        version=(clean(version, 120) or None) if version else None,
+        purl=purl.build(ecosystem, safe_name),
+        direct=direct if direct is not None else (info.direct if info else None),
+        scope=scope if scope is not None else (info.scope if info else Scope.UNKNOWN),
+        locations=location(ctx, line),
+        paths=[info.path] if info else ([[safe_name]] if direct else []),
+    )
+    if unresolved_reason or comp.version is None:
+        comp.version = None
+        comp.status = ComponentStatus.UNRESOLVED
+        comp.unresolved_reason = unresolved_reason or "no version recorded"
+    return comp

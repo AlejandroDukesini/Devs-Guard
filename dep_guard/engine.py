@@ -145,7 +145,10 @@ async def scan_async(target: str | Path, options: ScanOptions) -> ScanReport:
         )
     )
     components.sort(key=lambda c: (c.ecosystem, c.name, c.version or ""))
-    policy = evaluate(findings, components, config, today, parse_failures, len(manifests))
+    not_analysed = sum(1 for p in problems if p.code == "manifest_not_analysed")
+    policy = evaluate(
+        findings, components, config, today, parse_failures, len(manifests), not_analysed
+    )
     for msg in policy.unused_ignores:
         problems.append(
             Problem("unused_ignore", msg, Path(config.source).name if config.source else None)
