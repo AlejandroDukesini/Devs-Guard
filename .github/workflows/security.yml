@@ -1,0 +1,192 @@
+name: Security
+
+# DevSecOp stages that complement ci.yml (SAST/lint/tests) and codeql.yml.
+# Policy and exceptions: docs/devsecops.md and docs/security/excepciones.md.
+# Tools are downloaded as release binaries and verified against pinned
+# SHA-256 checksums (no third-party actions with mutable tags).
+
+on:
+  push:
+    branches: [Principal, Beta, main]
+  pull_request:
+  schedule:
+    - cron: "17 3 * * *" # daily: new advisories can affect unchanged code
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GITLEAKS_VERSION: "8.30.1"
+  GITLEAKS_SHA256: "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+  OSV_SCANNER_VERSION: "2.7.0"
+  OSV_SCANNER_SHA256: "160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b"
+  ZAP_VERSION: "2.17.0"
+  ZAP_SHA256: "94c8f767b1c2e94f0db66b3ae56514d5e3f5a728ee1b6c798e0c8fe2d61fbff0"
+
+jobs:
+  secrets:
+    name: Secret scanning (gitleaks, full history)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install gitleaks (checksum verified)
+        run: |
+          curl -sSfL -o gitleaks.tgz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum --check --strict
+          tar -xzf gitleaks.tgz gitleaks
+      - name: Scan every commit (findings are redacted in the output)
+        run: ./gitleaks git . --redact --no-banner --report-format sarif --report-path gitleaks.sarif
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: gitleaks-report
+          path: gitleaks.sarif
+          if-no-files-found: warn
+
+  sca:
+    name: SCA second opinion (OSV-Scanner, npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install OSV-Scanner (checksum verified)
+        run: |
+          curl -sSfL -o osv-scanner \
+            "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64"
+          echo "${OSV_SCANNER_SHA256}  osv-scanner" | sha256sum --check --strict
+          chmod +x osv-scanner
+      # An independent parser and matcher over the same lockfiles DepGuard
+      # scans in ci.yml (dogfood): a disagreement points at a DepGuard bug.
+      - name: OSV-Scanner on DepGuard's own lockfiles
+        run: ./osv-scanner scan source -L web/package-lock.json -L requirements.txt:requirements/ci.txt
+      - name: SARIF report
+        if: always()
+        run: |
+          ./osv-scanner scan source -L web/package-lock.json -L requirements.txt:requirements/ci.txt \
+            --format sarif --output osv-scanner.sarif || true  # report only; the step above gates
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: osv-scanner-report
+          path: osv-scanner.sarif
+          if-no-files-found: warn
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+      - name: npm audit (fails on high or critical, dev dependencies included)
+        working-directory: web
+        run: npm audit --audit-level=high
+
+  sbom:
+    name: SBOM (DepGuard itself) and schema validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install (hash-checked lock)
+        run: |
+          python -m pip install --require-hashes -r requirements/ci.txt
+          python -m pip install --no-deps --no-build-isolation -e .
+      - name: Official SPDX 2.3 and CycloneDX 1.6 schemas (pinned commit + SHA-256)
+        run: |
+          mkdir schemas && cd schemas
+          spdx=https://raw.githubusercontent.com/spdx/spdx-spec/aadf3b0b8dbbabdb4d880b0fc714255fea436ff7/schemas
+          cdx=https://raw.githubusercontent.com/CycloneDX/specification/55343ba19dee1785acf1ce9191540d5fd7b590db/schema
+          curl -sSfL -o spdx-2.3.json "$spdx/spdx-schema.json"
+          for f in bom-1.6.schema.json spdx.schema.json jsf-0.82.schema.json; do curl -sSfL -o "$f" "$cdx/$f"; done
+          sha256sum --check --strict <<'EOF'
+          239208b7ac287b3cf5d9a9af23f9d69863971102a5e1587a27a398b43490b89b  spdx-2.3.json
+          3e92dddbc30cf7f6a02b80f0942b1a4cfd4fb1c26f1dfc4310afa9d613cafb93  bom-1.6.schema.json
+          baa9d3bd1ed57b6751b0887edead6b5063ff53ff7429cf85d476c6c94af0166e  spdx.schema.json
+          8bae002c25e723db7ee1f26afde680ae1a2b1a8f6b4b4b0fd65dc3becb090aae  jsf-0.82.schema.json
+          EOF
+      - name: Every fixture rendered as SPDX and CycloneDX validates against its schema
+        run: python scripts/validate_sbom.py schemas
+      - name: SBOM of DepGuard (Python lock + web lock)
+        run: |
+          depguard sbom . -o depguard.cdx.json
+          depguard sbom . -f spdx -o depguard.spdx.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom
+          path: |
+            depguard.cdx.json
+            depguard.spdx.json
+          if-no-files-found: error
+
+  dast:
+    name: DAST (OWASP ZAP against depguard serve)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install DepGuard with its interface
+        run: |
+          python -m pip install --require-hashes -r requirements/ci.txt
+          (cd web && npm ci --ignore-scripts && npm run build:local)
+          python -m pip install --no-deps --no-build-isolation -e .
+      - name: Start the server under test (offline-capable fixtures only)
+        env:
+          DEPGUARD_CACHE_DIR: ${{ runner.temp }}/depguard-cache
+        run: |
+          depguard serve --port 8796 --no-browser --root "$GITHUB_WORKSPACE/fixtures" \
+            --token-file "$RUNNER_TEMP/session.url" > "$RUNNER_TEMP/serve.log" 2>&1 &
+          for _ in $(seq 1 60); do [ -s "$RUNNER_TEMP/session.url" ] && break; sleep 0.5; done
+          curl -sSf -o /dev/null http://127.0.0.1:8796/
+          python scripts/zap_plan.py "$RUNNER_TEMP/session.url" "$RUNNER_TEMP/plan.yaml"
+      - name: Install ZAP (checksum verified)
+        run: |
+          curl -sSfL -o zap.zip \
+            "https://github.com/zaproxy/zaproxy/releases/download/v${ZAP_VERSION}/ZAP_${ZAP_VERSION}_Crossplatform.zip"
+          echo "${ZAP_SHA256}  zap.zip" | sha256sum --check --strict
+          unzip -q zap.zip -d "$RUNNER_TEMP/zap"
+      - name: Spider, passive and active scan (fails on Medium or High)
+        env:
+          TARGET: http://127.0.0.1:8796
+          SCAN_PATH: ${{ github.workspace }}/fixtures/ecosystems/cargo
+          REPORT_DIR: ${{ github.workspace }}/zap-report
+        run: |
+          export SCAN_PATH_Q="$(python -c 'import os,urllib.parse;print(urllib.parse.quote(os.environ["SCAN_PATH"], safe=""))')"
+          mkdir -p "$REPORT_DIR"
+          set +e
+          "$JAVA_HOME_21_X64/bin/java" -Xmx2g -jar "$RUNNER_TEMP/zap/ZAP_${ZAP_VERSION}/zap-${ZAP_VERSION}.jar" \
+            -cmd -dir "$RUNNER_TEMP/zap-home" -autorun "$RUNNER_TEMP/plan.yaml"
+          status=$?
+          set -e
+          # exitStatus job: 1 = Medium/High alert (fail), 2 = Low alert (reported for review).
+          if [ "$status" -eq 2 ]; then
+            echo "::warning title=ZAP::Low-risk alerts found; review zap-report and record exceptions"
+            exit 0
+          fi
+          exit "$status"
+      - name: Keep the reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: zap-report
+          path: zap-report/
+          if-no-files-found: warn

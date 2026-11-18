@@ -1,0 +1,4 @@
+# Build tools for CI and releases (compiled with hashes into requirements/ci.txt).
+build
+hatchling>=1.27
+editables

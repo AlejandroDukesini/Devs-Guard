@@ -1,0 +1,91 @@
+# OWASP ZAP Automation Framework plan: DAST of the local app (`depguard serve`).
+# Used locally (ZAP cross-platform) and in CI (official image).
+# Render it first: python scripts/zap_plan.py <token-file> <plan> (ZAP does not
+# expand environment variables in header values). Other variables come from
+# the environment:
+#   TARGET          e.g. http://127.0.0.1:8796   (the server under test)
+#   SCAN_PATH       an allowed folder to scan (a fixture project)
+#   SCAN_PATH_Q     the same path, URL-encoded (for query strings)
+#   REPORT_DIR      where the reports are written
+# Policy (docs/devsecops.md): the run fails on any Medium or High alert;
+# Low/Informational alerts are reported and reviewed, exceptions go to
+# docs/security/excepciones.md with owner, reason and expiry.
+env:
+  contexts:
+    - name: depguard-local
+      urls:
+        - ${TARGET}
+      includePaths:
+        - ${TARGET}.*
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  - type: replacer
+    parameters:
+      deleteAllRules: true
+    rules:
+      - description: DepGuard session token
+        url: ".*"
+        matchType: req_header
+        matchString: Authorization
+        matchRegex: false
+        replacementString: Bearer __DEPGUARD_TOKEN__
+
+  # No OpenAPI document is exposed (by design), so the API is seeded explicitly.
+  - type: requestor
+    requests:
+      - url: ${TARGET}/
+      - url: ${TARGET}/api/info
+      - url: ${TARGET}/api/browse
+      - url: ${TARGET}/api/browse?path=${SCAN_PATH_Q}
+      - url: ${TARGET}/api/scans
+        method: POST
+        headers:
+          - "Content-Type: application/json"
+        data: '{"path": "${SCAN_PATH}", "offline": true, "latest": false, "epss": false, "kev": false}'
+        responseCode: 200
+      - url: ${TARGET}/api/scans
+      # Unknown ids still expose the routes to the active scanner (404 expected).
+      - url: ${TARGET}/api/scans/0123456789abcdef
+      - url: ${TARGET}/api/scans/0123456789abcdef/export/json
+
+  - type: spider
+    parameters:
+      context: depguard-local
+      maxDuration: 2
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+
+  - type: activeScan
+    parameters:
+      context: depguard-local
+      maxRuleDurationInMins: 2
+      maxScanDurationInMins: 15
+    policyDefinition:
+      defaultStrength: medium
+      defaultThreshold: medium
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: ${REPORT_DIR}
+      reportFile: zap-report.json
+  - type: report
+    parameters:
+      template: traditional-html
+      reportDir: ${REPORT_DIR}
+      reportFile: zap-report.html
+
+  - type: exitStatus
+    parameters:
+      errorLevel: Medium
+      warnLevel: Low

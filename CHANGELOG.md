@@ -17,6 +17,24 @@ All notable changes to this project are documented here. The format follows
   (DG-05).
 - Initial audit report: `docs/audit/01-auditoria-inicial.md`.
 
+### Added
+- Ecosystems: pnpm (v5/v6/v9), Yarn 1 and Berry, Pipfile.lock, pyproject.toml
+  (PEP 621/735, Poetry), Cargo.lock, go.mod, composer.lock/json,
+  packages.lock.json, *.csproj, Directory.Packages.props, pom.xml,
+  gradle.lockfile. Recognised but unsupported files make the scan INCOMPLETE.
+- Patch verification (`patch_status`), latest stable release from official
+  registries (`--latest`), check of the latest release itself in OSV,
+  breaking-upgrade hints, NVD fallback for CVSS v3/v4 and CWE (`--nvd`).
+- SPDX 2.3 output (`-f spdx`), validated against the official schemas
+  together with CycloneDX 1.6 (`scripts/validate_sbom.py`).
+- Local web app: `depguard serve` (FastAPI on 127.0.0.1, extra `web`) with a
+  React interface packaged in the wheel, history and server-side exports.
+- Pipeline: `security.yml` (gitleaks over the full history, OSV-Scanner,
+  npm audit, SBOM generation and schema validation, OWASP ZAP DAST against
+  the authenticated local app), hash-checked Python lock for CI and
+  releases, wheel content check, local-app e2e. Documented in
+  `docs/devsecops.md`; exceptions register in `docs/security/excepciones.md`.
+
 ## [1.0.0b2] - 2026-10-11
 
 ### Added

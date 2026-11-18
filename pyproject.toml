@@ -60,10 +60,13 @@ Security = "https://github.com/AlejandroDukesini/Devs-Guard/security/policy"
 [tool.hatch.version]
 path = "dep_guard/__init__.py"
 
+[tool.hatch.build]
+# The local UI is built from web/ (npm run build:local) and is not tracked in
+# git; artifacts are included in both the sdist and the wheel built from it.
+artifacts = ["dep_guard/server/static/**"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["dep_guard"]
-# The local UI is built from web/ (npm run build:local) and is not tracked in git.
-artifacts = ["dep_guard/server/static/**"]
 
 [tool.hatch.build.targets.sdist]
 include = ["dep_guard", "tests", "fixtures", "README.md", "LICENSE", "CHANGELOG.md"]

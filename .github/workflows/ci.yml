@@ -33,27 +33,80 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: pip
-          cache-dependency-path: pyproject.toml
-      - name: Install
-        run: python -m pip install -e ".[dev]"
+          cache-dependency-path: requirements/ci.txt
+      - name: Install (hash-checked lock, see docs/devsecops.md)
+        run: |
+          python -m pip install --require-hashes -r requirements/ci.txt
+          python -m pip install --no-deps --no-build-isolation -e .
       - name: No invisible / bidi characters in tracked files
         if: matrix.os == 'ubuntu-latest'
         run: python scripts/check_text_safety.py
       - name: Lint (ruff)
         run: |
-          ruff check dep_guard tests
-          ruff format --check dep_guard tests
+          ruff check dep_guard tests scripts
+          ruff format --check dep_guard tests scripts
       - name: Type check (mypy --strict)
         run: mypy
       - name: SAST (bandit)
         run: bandit -q -c pyproject.toml -r dep_guard
       - name: Tests
         run: pytest --cov --cov-report=term --cov-report=xml
-      - name: Build sdist and wheel
-        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.13'
+
+  package:
+    name: Build sdist and wheel (with the local interface)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build the interface
+        working-directory: web
+        run: npm ci --ignore-scripts && npm run build:local
+      - name: Build (build tools from the hash-checked lock)
         run: |
-          python -m pip install build
-          python -m build
+          python -m pip install --require-hashes -r requirements/ci.txt
+          python -m build --no-isolation
+      - name: The wheel ships the interface
+        run: python -m zipfile -l dist/*.whl | grep -E "dep_guard/server/static/(local.html|assets/)"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  local-app:
+    name: Local app e2e (real depguard serve + Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install
+        run: |
+          python -m pip install --require-hashes -r requirements/ci.txt
+          (cd web && npm ci --ignore-scripts && npm run build:local)
+          python -m pip install --no-deps --no-build-isolation -e .
+      - name: E2E
+        working-directory: web
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test -c playwright.local.config.js
 
   dogfood:
     name: DepGuard scans its own dependencies
