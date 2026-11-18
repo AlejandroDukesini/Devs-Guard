@@ -26,6 +26,15 @@ export function readToken() {
   }
 }
 
+/** Forget the token in this tab (after the session ends or expires). */
+export function forgetToken() {
+  try {
+    sessionStorage.removeItem(KEY)
+  } catch {
+    // storage unavailable: nothing was stored
+  }
+}
+
 export class ApiError extends Error {
   constructor(status, message) {
     super(message)
@@ -77,6 +86,7 @@ export function createApi(token) {
     history: () => json('GET', '/api/scans'),
     get: (id) => json('GET', `/api/scans/${encodeURIComponent(id)}`),
     remove: (id) => json('DELETE', `/api/scans/${encodeURIComponent(id)}`),
+    endSession: () => json('POST', '/api/session/end', {}),
     async download(id, format) {
       const response = await call('GET', `/api/scans/${encodeURIComponent(id)}/export/${encodeURIComponent(format)}`)
       const blob = await response.blob()

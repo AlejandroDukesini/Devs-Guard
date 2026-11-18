@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import socket
+import sys
+import time
 import webbrowser
 from collections.abc import Callable
 from pathlib import Path
@@ -53,6 +56,7 @@ def serve(
         raise ServeError(f"port {port} is busy; try --port 0 for a free one") from None
     real_port = sock.getsockname()[1]
 
+    _security_logging()
     token = new_token()
     settings = Settings(
         token=token,
@@ -89,3 +93,17 @@ def _write_private(path: Path, text: str) -> None:
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as fh:
         fh.write(text)
+
+
+def _security_logging() -> None:
+    """Security events to stderr with UTC ISO-8601 timestamps (ASVS V16.2)."""
+    handler = logging.StreamHandler(sys.stderr)
+    formatter = logging.Formatter(
+        "%(asctime)sZ %(levelname)s %(name)s %(message)s", datefmt="%Y-%m-%dT%H:%M:%S"
+    )
+    formatter.converter = time.gmtime
+    handler.setFormatter(formatter)
+    logger = logging.getLogger("depguard.server")
+    logger.handlers[:] = [handler]
+    logger.setLevel(logging.INFO)
+    logger.propagate = False

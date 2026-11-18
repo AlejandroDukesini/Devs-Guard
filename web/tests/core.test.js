@@ -201,3 +201,23 @@ describe('nothing analysed is never PASS (DG-01)', () => {
     expect(report.policy.incomplete_reasons).toContain('no supported manifest or lockfile was found')
   })
 })
+
+describe('untrusted keys never pollute prototypes (ASVS V15.3.6)', () => {
+  it('lockfile and advisory keys named __proto__ / constructor are inert', async () => {
+    const lock = {
+      lockfileVersion: 3,
+      packages: {
+        '': { dependencies: { __proto__: '1.0.0', constructor: '1.0.0' } },
+        'node_modules/__proto__': { version: '1.0.0', resolved: 'https://r/a.tgz' },
+        'node_modules/constructor': { version: '1.0.0', resolved: 'https://r/b.tgz' },
+      },
+    }
+    // JSON.stringify keeps "__proto__" as a real key, exactly as in a hostile file.
+    const content = JSON.stringify(lock).replace('"dependencies":{', '"dependencies":{"__proto__":"1.0.0",')
+    const report = await scan([{ path: 'package-lock.json', content }], scanOptions(createMockFetch()))
+    expect(report.components.map((c) => c.name).sort()).toEqual(['__proto__', 'constructor'])
+    expect({}.polluted).toBeUndefined()
+    expect(Object.prototype.version).toBeUndefined()
+    expect(Object.getPrototypeOf({})).toBe(Object.prototype)
+  })
+})

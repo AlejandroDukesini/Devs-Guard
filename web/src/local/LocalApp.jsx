@@ -3,7 +3,7 @@ import Results from '../components/Results.jsx'
 import { Priority } from '../components/FindingRow.jsx'
 import { ShieldIcon, Spinner, XIcon } from '../components/Icons.jsx'
 import { VERDICT } from '../demo/labels.js'
-import { createApi, readToken } from './api.js'
+import { createApi, forgetToken, readToken } from './api.js'
 
 const EXPORTS = [
   { id: 'json', label: 'JSON', hint: 'depguard.report/v1, igual que la CLI' },
@@ -208,7 +208,30 @@ export default function LocalApp() {
   const [state, setState] = useState({ phase: 'idle' })
   const [options, setOptions] = useState({ latest: true, nvd: false, epss: true, kev: true, offline: false, fail_on: null })
 
-  const refresh = useCallback(() => api?.history().then((h) => setHistory(h.scans)), [api])
+  // Any 401 means the session ended or expired: stop and explain how to reopen.
+  const fail = useCallback((err) => {
+    if (err?.status === 401) {
+      forgetToken()
+      setFatal(`Sesión terminada (${err.message}).`)
+      return true
+    }
+    return false
+  }, [])
+
+  const refresh = useCallback(
+    () =>
+      api
+        ?.history()
+        .then((h) => setHistory(h.scans))
+        .catch(fail),
+    [api, fail],
+  )
+
+  const endSession = async () => {
+    await api.endSession().catch(() => null)
+    forgetToken()
+    setFatal('Sesión cerrada: el token ya no es válido.')
+  }
 
   useEffect(() => {
     if (!api) return
@@ -227,7 +250,7 @@ export default function LocalApp() {
       setState({ phase: 'done', id: result.id, path, report: result.report, ms: Math.round(performance.now() - started) })
       refresh()
     } catch (err) {
-      setState({ phase: 'error', path, error: { exitCode: 2, message: err.message } })
+      if (!fail(err)) setState({ phase: 'error', path, error: { exitCode: 2, message: err.message } })
     }
   }
 
@@ -236,7 +259,7 @@ export default function LocalApp() {
       const entry = await api.get(id)
       setState({ phase: 'done', id, path: entry.path, report: entry.report, ms: null })
     } catch (err) {
-      setState({ phase: 'error', error: { exitCode: 2, message: err.message } })
+      if (!fail(err)) setState({ phase: 'error', error: { exitCode: 2, message: err.message } })
     }
   }
 
@@ -273,6 +296,9 @@ export default function LocalApp() {
           ) : (
             <Spinner />
           )}
+          <button type="button" className="btn-ghost ml-auto py-1 text-xs" onClick={endSession}>
+            Cerrar sesión
+          </button>
         </div>
       </header>
       <div className="mx-auto grid max-w-7xl gap-4 p-4 lg:grid-cols-[20rem_minmax(0,1fr)]">

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -25,6 +26,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from dep_guard import __version__
 from dep_guard.adapters import NOT_ANALYSED, adapter_for
@@ -34,13 +36,20 @@ from dep_guard.models import Priority
 from dep_guard.reporters import cyclonedx, json_report, sarif, spdx
 from dep_guard.server.history import History
 from dep_guard.server.security import OriginPolicy, PathGuard, PathRejected, token_matches
+from dep_guard.textutil import clean
 
 log = logging.getLogger("depguard.server")
+# Security events (ASVS V16.3): rejected requests, expired sessions, refused paths.
+# Never contains the session token; request data is sanitised (log injection).
+security_log = logging.getLogger("depguard.server.security")
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 MAX_BODY_BYTES = 16 * 1024
 MAX_LISTING = 500
 SCAN_TIMEOUT_S = 600.0
+# Session limits (ASVS V7.3): restart `depguard serve` to get a new session.
+IDLE_TIMEOUT_S = 60 * 60.0
+MAX_LIFETIME_S = 12 * 60 * 60.0
 
 CSP = (
     "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
@@ -86,10 +95,35 @@ class Settings:
     scan_timeout: float = SCAN_TIMEOUT_S
     scan_fn: Callable[[Path, ScanOptions], ScanReport] = scan
     busy: bool = field(default=False)
+    idle_timeout: float = IDLE_TIMEOUT_S
+    max_lifetime: float = MAX_LIFETIME_S
+    clock: Callable[[], float] = time.monotonic
+    started: float | None = None
+    last_seen: float | None = None
+    ended: bool = False  # set by POST /api/session/end, never reset
+
+
+class Utf8JSONResponse(JSONResponse):
+    """JSON with an explicit charset (ASVS V4.1.1)."""
+
+    media_type = "application/json; charset=utf-8"
 
 
 def _error(status: int, message: str) -> JSONResponse:
-    return JSONResponse({"error": message}, status_code=status)
+    return Utf8JSONResponse({"error": message}, status_code=status)
+
+
+def _deny(request: Request, status: int, reason: str) -> JSONResponse:
+    client = request.client.host if request.client else "-"
+    security_log.warning(
+        "denied status=%d reason=%s method=%s path=%s client=%s",
+        status,
+        reason,
+        clean(request.method, 10),
+        clean(request.url.path, 200),
+        clean(client, 60),
+    )
+    return _error(status, reason)
 
 
 def create_app(settings: Settings) -> FastAPI:
@@ -99,8 +133,10 @@ def create_app(settings: Settings) -> FastAPI:
         docs_url=None,
         redoc_url=None,
         openapi_url=None,
+        default_response_class=Utf8JSONResponse,
     )
     origins = OriginPolicy(settings.port)
+    settings.started = settings.last_seen = settings.clock()
 
     @app.middleware("http")
     async def guard(
@@ -117,30 +153,49 @@ def create_app(settings: Settings) -> FastAPI:
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         if not origins.host_ok(request.headers.get("host")):
-            return _error(400, "invalid Host header")
+            return _deny(request, 400, "invalid Host header")
         if not origins.origin_ok(request.headers.get("origin")):
-            return _error(403, "cross-origin request refused")
+            return _deny(request, 403, "cross-origin request refused")
         if request.headers.get("sec-fetch-site") not in (None, "same-origin", "none"):
-            return _error(403, "cross-site request refused")
+            return _deny(request, 403, "cross-site request refused")
         if request.url.path.startswith("/api/"):
             if not token_matches(settings.token, request.headers.get("authorization")):
-                return _error(401, "missing or invalid session token")
+                return _deny(request, 401, "missing or invalid session token")
+            now = settings.clock()
+            started = now if settings.started is None else settings.started
+            last_seen = now if settings.last_seen is None else settings.last_seen
+            if settings.ended:
+                return _deny(request, 401, "session ended; restart depguard serve")
+            if now - started > settings.max_lifetime:
+                return _deny(request, 401, "session expired; restart depguard serve")
+            if now - last_seen > settings.idle_timeout:
+                return _deny(
+                    request, 401, "session expired after inactivity; restart depguard serve"
+                )
+            settings.last_seen = now
             if request.method in ("POST", "PUT", "PATCH"):
                 length = request.headers.get("content-length")
                 if length is None:
-                    return _error(411, "Content-Length required")
+                    return _deny(request, 411, "Content-Length required")
                 if not length.isdigit() or int(length) > MAX_BODY_BYTES:
-                    return _error(413, "request body too large")
+                    return _deny(request, 413, "request body too large")
         return await call_next(request)
 
     @app.exception_handler(PathRejected)
-    async def _path_rejected(_request: Request, exc: PathRejected) -> JSONResponse:
-        return _error(403, str(exc))
+    async def _path_rejected(request: Request, exc: PathRejected) -> JSONResponse:
+        return _deny(request, 403, str(exc))
 
     @app.exception_handler(Exception)
     async def _unexpected(_request: Request, exc: Exception) -> JSONResponse:
+        log.error("unexpected error (%s); details at debug level", type(exc).__name__)
         log.debug("unhandled error", exc_info=exc)
         return _error(500, "internal error (details are not exposed; run with -vv)")
+
+    @app.post("/api/session/end")
+    async def end_session() -> dict[str, bool]:
+        settings.ended = True
+        security_log.warning("session ended by the user; the token is no longer accepted")
+        return {"ended": True}
 
     @app.get("/api/info")
     async def info() -> dict[str, Any]:
@@ -283,8 +338,8 @@ def create_app(settings: Settings) -> FastAPI:
             headers={"Content-Disposition": f'attachment; filename="{filename}"'},
         )
 
-    @app.exception_handler(HTTPException)
-    async def _http_error(_request: Request, exc: HTTPException) -> JSONResponse:
+    @app.exception_handler(StarletteHTTPException)
+    async def _http_error(_request: Request, exc: StarletteHTTPException) -> JSONResponse:
         return _error(exc.status_code, str(exc.detail))
 
     index = STATIC_DIR / "local.html"

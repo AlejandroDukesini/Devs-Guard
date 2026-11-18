@@ -352,3 +352,71 @@ def test_serve_binds_to_loopback_only(monkeypatch: pytest.MonkeyPatch, root: Pat
 def test_serve_rejects_a_missing_root(tmp_path: Path) -> None:
     with pytest.raises(server_module.ServeError, match="invalid --root"):
         server_module.serve([str(tmp_path / "nope")], port=0, open_browser=False)
+
+
+# ------------------------------------------------- session limits and logging
+
+
+def _client_with_clock(settings: Settings, now: list[float]) -> TestClient:
+    settings.clock = lambda: now[0]
+    return TestClient(
+        create_app(settings), base_url=f"http://127.0.0.1:{PORT}", raise_server_exceptions=False
+    )
+
+
+def test_session_expires_after_inactivity(settings: Settings) -> None:
+    now = [1000.0]
+    with _client_with_clock(settings, now) as client:
+        assert client.get("/api/info", headers=AUTH).status_code == 200
+        now[0] += settings.idle_timeout - 1
+        assert client.get("/api/info", headers=AUTH).status_code == 200  # activity renews
+        now[0] += settings.idle_timeout + 1
+        response = client.get("/api/info", headers=AUTH)
+        assert response.status_code == 401 and "inactivity" in response.json()["error"]
+
+
+def test_session_has_an_absolute_lifetime(settings: Settings) -> None:
+    now = [0.0]
+    with _client_with_clock(settings, now) as client:
+        while now[0] < settings.max_lifetime:
+            now[0] += settings.idle_timeout / 2  # stay active the whole time
+            client.get("/api/info", headers=AUTH)
+        now[0] += 1
+        response = client.get("/api/info", headers=AUTH)
+        assert response.status_code == 401 and "expired" in response.json()["error"]
+
+
+def test_ending_the_session_revokes_the_token(client: TestClient) -> None:
+    assert client.post("/api/session/end", headers=AUTH, json={}).json() == {"ended": True}
+    response = client.get("/api/info", headers=AUTH)
+    assert response.status_code == 401 and "ended" in response.json()["error"]
+
+
+def test_security_events_are_logged_without_secrets(
+    client: TestClient, root: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    caplog.set_level("WARNING", logger="depguard.server.security")
+    client.get("/api/info", headers={"Authorization": "Bearer wrong-" + TOKEN})
+    client.get("/api/info", headers={**AUTH, "Host": "evil.example"})
+    unc = chr(92) * 2 + "evil" + chr(92) + "share"
+    client.get("/api/browse", params={"path": unc}, headers=AUTH)
+    # Percent-encoded ESC and LF: decoded by the server into request.url.path.
+    client.get("/api/x%1B%5B31m%0Aforged-line", headers={"Authorization": "Bearer bad"})
+    text = caplog.text
+    assert "status=401" in text and "status=400" in text and "status=403" in text
+    assert TOKEN not in text  # neither the real token nor the attempted one
+    assert chr(0x1B) not in text and "\nforged-line" not in text  # no log injection
+    assert all(r.name == "depguard.server.security" for r in caplog.records)
+
+
+def test_json_declares_its_charset_and_errors_have_one_shape(client: TestClient) -> None:
+    assert client.get("/api/info", headers=AUTH).headers["content-type"] == (
+        "application/json; charset=utf-8"
+    )
+    missing = client.get("/api/does-not-exist", headers=AUTH)
+    assert missing.status_code == 404 and missing.json() == {"error": "Not Found"}
+
+
+@pytest.mark.parametrize("method", ["TRACE", "PUT", "PATCH", "CONNECT"])
+def test_unused_http_methods_are_refused(client: TestClient, method: str) -> None:
+    assert client.request(method, "/api/info", headers=AUTH).status_code == 405
