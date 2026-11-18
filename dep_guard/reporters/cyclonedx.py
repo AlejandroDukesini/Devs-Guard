@@ -85,15 +85,20 @@ def _vulnerability(f: Finding) -> dict[str, Any]:
         ],
     }
     if f.cvss_score is not None:
-        v["ratings"] = [
-            {
-                "source": {"name": "OSV"},
-                "score": f.cvss_score,
-                "severity": f.severity.value.lower(),
-                "method": "CVSSv31" if (f.cvss_vector or "").startswith("CVSS:3.1") else "CVSSv3",
-                "vector": f.cvss_vector,
-            }
-        ]
+        vector = f.cvss_vector or ""
+        rating: dict[str, Any] = {
+            "source": {"name": "NVD" if f.severity_source.startswith("nvd") else "OSV"},
+            "score": f.cvss_score,
+            "severity": f.severity.value.lower(),
+            "method": "CVSSv4"
+            if f.severity_source == "nvd_cvss_v4"
+            else "CVSSv31"
+            if vector.startswith("CVSS:3.1")
+            else "CVSSv3",
+        }
+        if vector:
+            rating["vector"] = vector
+        v["ratings"] = [rating]
     if f.fixed_versions:
         v["recommendation"] = f"Upgrade {f.component.name} to {f.fixed_versions[0]} or later."
     if f.published:

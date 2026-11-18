@@ -31,7 +31,7 @@ from dep_guard.engine import (
     scan,
 )
 from dep_guard.models import Priority
-from dep_guard.reporters import FORMATS, cyclonedx, json_report, sarif, table
+from dep_guard.reporters import FORMATS, cyclonedx, json_report, sarif, spdx, table
 from dep_guard.sources.cache import Cache
 
 SUBCOMMANDS = {"scan", "sbom", "formats", "cache"}
@@ -137,6 +137,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_sbom.add_argument("path", nargs="?", default=".")
     p_sbom.add_argument("-o", "--output", type=Path)
+    p_sbom.add_argument("-f", "--format", choices=["cyclonedx", "spdx"], default="cyclonedx")
     _common(p_sbom)
 
     sub.add_parser("formats", help="list supported manifest and lockfile formats")
@@ -217,7 +218,10 @@ def main(argv: list[str] | None = None) -> int:
 def _run(args: argparse.Namespace, out: Console, err: Console) -> int:
     if args.command == "sbom":
         root, components, _problems = collect(args.path)
-        _emit(cyclonedx.render(components, str(root), None, None), args.output)
+        if args.format == "spdx":
+            _emit(spdx.render(components, str(root)), args.output)
+        else:
+            _emit(cyclonedx.render(components, str(root), None, None), args.output)
         return EXIT_PASS
 
     if args.config is not None and not args.config.is_file():
@@ -253,6 +257,8 @@ def _run(args: argparse.Namespace, out: Console, err: Console) -> int:
         text = json_report.render(report)
     elif args.format == "sarif":
         text = sarif.render(report)
+    elif args.format == "spdx":
+        text = spdx.render(report.components, report.root, report.generated_at)
     else:
         text = cyclonedx.render(
             report.components, report.root, report.findings, report.generated_at
