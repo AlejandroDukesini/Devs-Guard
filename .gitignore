@@ -50,3 +50,6 @@ web/test-results/
 web/playwright-report/
 web/reports/
 .netlify/
+
+# Caché de Gradle (fixtures)
+.gradle/
