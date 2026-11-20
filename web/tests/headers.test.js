@@ -1,5 +1,6 @@
 // netlify.toml and security-headers.js must stay identical.
 
+import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { parse } from 'smol-toml'
@@ -24,6 +25,15 @@ describe('deployment config', () => {
     const origins = connect.split(' ').slice(1)
     expect(origins).toEqual(["'self'", 'https://api.osv.dev', 'https://api.first.org'])
     for (const o of origins.slice(1)) expect(ALLOWED_HOSTS.has(new URL(o).hostname)).toBe(true)
+  })
+
+  it("CSP style hash matches the stylesheet Paper Shaders injects", () => {
+    // Fails when an upgrade changes it: recompute the hash, review the CSS.
+    const mount = readFileSync(fileURLToPath(import.meta.resolve('@paper-design/shaders').replace(/index\.js$/, 'shader-mount.js')), 'utf-8')
+    const css = mount.match(/const defaultStyle = `([^`]*)`;/)[1]
+    const hash = `'sha256-${createHash('sha256').update(css).digest('base64')}'`
+    const style = SECURITY_HEADERS['Content-Security-Policy'].split(';').map((d) => d.trim()).find((d) => d.startsWith('style-src'))
+    expect(style.split(' ').slice(1)).toEqual(["'self'", hash])
   })
 
   it('KEV proxy rewrite points at the CISA feed', () => {

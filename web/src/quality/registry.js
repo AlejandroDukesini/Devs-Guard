@@ -42,7 +42,9 @@ export const PERF_BUDGET = Object.freeze({
   versionCompareMs: 750,
   discoveryMs: 500,
 })
-export const APPROVED_RUNTIME_DEPS = ['react', 'react-dom', 'smol-toml']
+// @paper-design/shaders-react: the hero's Neuro Noise background (WebGL2, no
+// network, pinned exact). Its only dependency is @paper-design/shaders.
+export const APPROVED_RUNTIME_DEPS = ['@paper-design/shaders-react', 'react', 'react-dom', 'smol-toml']
 export const NPM_REGISTRY = 'https://registry.npmjs.org/'
 
 const fixtureScan = (project, extra = {}) => scan(projectFiles(project), mockScanOptions(fixtureMockFetch(), extra))

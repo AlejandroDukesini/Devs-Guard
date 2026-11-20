@@ -38,10 +38,11 @@ Navegador
 La página puede ejecutar 46 pruebas reales del motor y emitir un certificado
 de pruebas internas ligado a esa ejecución. Ver [docs/quality.md](../docs/quality.md).
 
-La portada (Liquid Metal Hero) es procedural: la esfera es un shader WebGL
-propio (`src/hero/sphereRenderer.js`, sin librerías 3D), con fondo reactivo al
-cursor, alternativa en CSS sin WebGL, imagen fija con `prefers-reduced-motion` y
-resolución adaptativa si la GPU no llega a ~40 fps.
+El fondo de la portada es el shader Neuro Noise de Paper Design
+(`@paper-design/shaders-react`, WebGL2), detrás de todo el contenido. Se pausa
+fuera de pantalla y en pestañas ocultas; con `prefers-reduced-motion` sigue
+moviéndose a un cuarto de velocidad. Sin WebGL2 el fondo queda negro. La CSP admite su hoja de estilos base
+solo por hash.
 
 ## Ejecutar en local
 

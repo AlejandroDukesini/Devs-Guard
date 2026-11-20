@@ -21,6 +21,7 @@
     "build:local": "vite build --config vite.local.config.js"
   },
   "dependencies": {
+    "@paper-design/shaders-react": "0.0.82",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "smol-toml": "^1.9.0"

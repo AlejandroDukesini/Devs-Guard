@@ -14,19 +14,56 @@ async function scanSample(page, title) {
   await page.getByRole('button', { name: 'Escanear' }).click()
 }
 
-test('landing: liquid metal hero renders without errors and links to the code', async ({ page }) => {
+test('landing: Neuro Noise hero animates behind the content without errors', async ({ page }) => {
+  test.slow() // animates WebGL, which CI renders in software
   const errors = []
   page.on('pageerror', (e) => errors.push(e.message))
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
   await page.reload()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('DepGuard')
-  // WebGL sphere, or the CSS fallback: never an empty hero.
   await expect(page.locator('#top')).toHaveAttribute('data-webgl', /^(on|off)$/)
   await expect(page.getByRole('link', { name: 'Probar la demo' })).toHaveAttribute('href', '#demo')
   await expect(page.getByRole('link', { name: 'Código en GitHub' })).toHaveAttribute('href', /github\.com\/AlejandroDukesini\/Devs-Guard/)
-  // The pointer moves the light without blocking the call-to-action links.
-  const box = await page.locator('#top').boundingBox()
-  await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.5)
+
+  if ((await page.locator('#top').getAttribute('data-webgl')) === 'on') {
+    // Exactly one shader, covering the whole hero.
+    const shader = page.locator('#top .hero-shader')
+    await expect(shader).toHaveCount(1)
+    await expect(shader.locator('canvas')).toHaveCount(1)
+    const [hero, bg] = await Promise.all([page.locator('#top').boundingBox(), shader.boundingBox()])
+    expect(bg).toEqual(hero)
+    // Each sample reads the shader's clock twice, 500 ms apart, in one call.
+    const sample = () =>
+      shader.evaluate((el) => new Promise((done) => {
+        const mount = el.paperShaderMount
+        const start = mount.currentFrame
+        setTimeout(() => done({ start, end: mount.currentFrame }), 500)
+      }))
+    // CI renders WebGL in software, so the test lowers the shader's
+    // resolution (library API) to keep from starving the parallel tests.
+    const mount = await shader.evaluateHandle((el) => el.paperShaderMount)
+    await mount.evaluate((m) => m.setMaxPixelCount(160 * 90))
+    // The suite emulates reduced motion: still moving, at a quarter speed.
+    expect(await mount.evaluate((m) => m.speed)).toBe(0.5)
+    const slow = await sample()
+    expect(slow.end).toBeGreaterThan(slow.start)
+    // With motion allowed it runs at full speed, and keeps going after a resize.
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    expect(await mount.evaluate((m) => m.speed)).toBe(2)
+    const moving = await sample()
+    const size = page.viewportSize()
+    await page.setViewportSize({ width: Math.round(size.width * 0.8), height: size.height })
+    const resized = await sample()
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    expect(moving.end).toBeGreaterThan(moving.start)
+    expect(resized.end).toBeGreaterThan(resized.start)
+    expect(resized.start).toBeGreaterThanOrEqual(moving.end)
+    // Same instance throughout (no remount), still covering the whole hero.
+    expect(await shader.evaluate((el, m) => el.paperShaderMount === m, mount)).toBe(true)
+    expect(await shader.boundingBox()).toEqual(await page.locator('#top').boundingBox())
+  }
+
+  // The background never takes clicks: the call-to-action links work.
   await page.getByRole('link', { name: 'Ver certificado' }).click()
   await expect(page).toHaveURL(/#certificado$/)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)

@@ -16,6 +16,10 @@ All notable changes to this project are documented here. The format follows
   vite 8.3.8, undici 8.12.4, zod 4.6.7, minimatch 11.0.9, eslint 10.15.0
   (DG-05).
 - Initial audit report: `docs/audit/01-auditoria-inicial.md`.
+- New approved runtime dependency `@paper-design/shaders-react` (pinned
+  exact, no network access). The CSP `style-src` admits its base stylesheet by
+  SHA-256 hash only (no `unsafe-inline`); a test recomputes the hash from the
+  installed package.
 
 ### Added
 - Ecosystems: pnpm (v5/v6/v9), Yarn 1 and Berry, Pipfile.lock, pyproject.toml
@@ -66,10 +70,12 @@ All notable changes to this project are documented here. The format follows
   fingerprint of the evaluated code (docs/quality.md).
 
 ### Changed
-- Liquid Metal Hero: procedural WebGL liquid-metal sphere (no 3D library),
-  pointer-reactive aurora, halo, particles and light lines, staggered entrance,
-  parallax layers, CSS fallback, reduced-motion still frame and adaptive
-  resolution. Replaces the hero photo.
+- Hero background: Paper Design's Neuro Noise shader
+  (`@paper-design/shaders-react` 0.0.82, WebGL2) fills the whole section behind
+  the content, replacing the earlier Liquid Metal sphere and its layers. One
+  instance, rendered at 1x and capped at ~1080p of pixels; paused off screen,
+  and in hidden tabs, a quarter speed with `prefers-reduced-motion`; plain black
+  without WebGL2. Replaces the hero photo.
 - Quality certificate: tests that cannot apply to the environment (served
   production headers on the dev server) are "No aplica" and no longer block
   the result, which made the certificate look stuck at "Evidencia insuficiente"

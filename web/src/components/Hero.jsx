@@ -1,45 +1,69 @@
-import { useRef } from 'react'
-import { useHeroScene } from '../hero/useHeroScene.js'
+import { useSyncExternalStore } from 'react'
+import { NeuroNoise } from '@paper-design/shaders-react'
 import '../hero/hero.css'
 
-// Liquid Metal Hero. Layers, back to front (all decorative, pointer-events
-// off): aurora gradients, tech grid, light lines through the transition
-// zone, reactive particles, cursor halo and a subtle noise. The sphere is a
-// WebGL shader (src/hero/sphereRenderer.js) with a CSS fallback.
+// Hero background: Paper Design's Neuro Noise shader (WebGL2), one instance
+// behind the content. The library sizes its canvas to the parent with a
+// ResizeObserver and pauses itself when the hero is off screen or the tab is
+// hidden. With prefers-reduced-motion it keeps moving, at a quarter speed.
+// Without WebGL2 the shader is not mounted and the section keeps its black
+// background (the shader's colorBack), so the text never sits on nothing.
+// The library injects a small base <style>; the CSP admits it by hash.
+
+let webgl2
+function hasWebGL2() {
+  if (webgl2 === undefined) {
+    try {
+      const gl = document.createElement('canvas').getContext('webgl2')
+      webgl2 = Boolean(gl)
+      gl?.getExtension('WEBGL_lose_context')?.loseContext()
+    } catch {
+      webgl2 = false
+    }
+  }
+  return webgl2
+}
+
+// A soft full-bleed noise needs no 2x supersampling (the library default):
+// render at the device's own ratio, capped at ~1080p worth of pixels so 4K
+// and high-DPI phones stay cheap. The canvas is still stretched to fill.
+const MAX_PIXELS = 1920 * 1080
+
+const SPEED = 2
+// Reduced motion slows the drift instead of freezing it: Windows reports
+// "reduce" whenever its animation effects are off, often only for speed.
+const REDUCED_FACTOR = 0.25
+
+const REDUCED = '(prefers-reduced-motion: reduce)'
+const subscribeReduced = (onChange) => {
+  const query = globalThis.matchMedia?.(REDUCED)
+  query?.addEventListener('change', onChange)
+  return () => query?.removeEventListener('change', onChange)
+}
+const getReduced = () => Boolean(globalThis.matchMedia?.(REDUCED).matches)
+
 export default function Hero() {
-  const section = useRef(null)
-  const sphere = useRef(null)
-  const particles = useRef(null)
-  useHeroScene(section, sphere, particles)
+  const webgl = useSyncExternalStore(noSubscribe, hasWebGL2, noWebGL)
+  const reducedMotion = useSyncExternalStore(subscribeReduced, getReduced, noWebGL)
 
   return (
-    <section id="top" ref={section} className="hero relative isolate overflow-hidden" data-webgl="pending">
-      <div className="hero-bg" aria-hidden="true">
-        <div className="hero-depth hero-depth-1">
-          <div className="hero-aurora hero-aurora-a" />
-          <div className="hero-aurora hero-aurora-b" />
-        </div>
-        <div className="hero-depth hero-depth-2">
-          <div className="hero-aurora hero-aurora-c" />
-          <div className="hero-grid" />
-        </div>
-        <svg className="hero-lines hero-depth hero-depth-3" viewBox="0 0 1200 600" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="hero-line" x1="0" x2="1">
-              <stop offset="0" stopColor="#38bdf8" stopOpacity="0" />
-              <stop offset="0.45" stopColor="#60a5fa" />
-              <stop offset="0.7" stopColor="#a78bfa" />
-              <stop offset="1" stopColor="#22d3ee" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path className="hero-line hero-line-1" d="M120 470 C 420 470, 560 230, 1080 250" />
-          <path className="hero-line hero-line-2" d="M60 330 C 380 300, 600 420, 1140 330" />
-          <path className="hero-line hero-line-3" d="M200 150 C 480 210, 700 120, 1100 420" />
-        </svg>
-        <canvas ref={particles} className="hero-particles" />
-        <div className="hero-halo" />
-        <div className="hero-noise" />
-      </div>
+    <section id="top" className="hero relative isolate overflow-hidden" data-webgl={webgl ? 'on' : 'off'}>
+      {webgl && (
+        <NeuroNoise
+          className="hero-shader"
+          aria-hidden="true"
+          colorFront="#caffc7"
+          colorMid="#0067c7"
+          colorBack="#000000"
+          brightness={0.2}
+          contrast={0.28}
+          speed={reducedMotion ? SPEED * REDUCED_FACTOR : SPEED}
+          scale={0.6}
+          rotation={36}
+          minPixelRatio={1}
+          maxPixelCount={MAX_PIXELS}
+        />
+      )}
 
       <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-6 pt-14 pb-10 sm:px-10 md:min-h-[38rem] md:grid-cols-[1.1fr_1fr] md:gap-4 md:py-20 lg:px-16">
         <div className="max-w-xl">
@@ -58,16 +82,12 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="hero-in hero-in-3 relative mx-auto aspect-square w-full max-w-[19rem] sm:max-w-[26rem] md:max-w-[34rem]">
-          <div className="hero-depth hero-depth-4 absolute inset-0">
-            <div className="hero-float absolute inset-0">
-              <div className="hero-sphere-shadow" aria-hidden="true" />
-              <canvas ref={sphere} className="hero-sphere" role="img" aria-label="Esfera de metal líquido iridiscente" />
-              <div className="hero-sphere-fallback" aria-hidden="true" />
-            </div>
-          </div>
-        </div>
+        {/* Keeps the hero's original size and composition: the shader shows through here. */}
+        <div className="mx-auto aspect-square w-full max-w-[19rem] sm:max-w-[26rem] md:max-w-[34rem]" aria-hidden="true" />
       </div>
     </section>
   )
 }
+
+const noSubscribe = () => () => {}
+const noWebGL = () => false

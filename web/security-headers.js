@@ -5,7 +5,9 @@
 export const CSP = [
   "default-src 'self'",
   "script-src 'self'",
-  "style-src 'self'",
+  // The hash admits only the base stylesheet Paper Shaders (hero background)
+  // injects; tests/headers.test.js recomputes it from the installed package.
+  "style-src 'self' 'sha256-bcX2M6hOeEgeI9Ttj3KtXWZuoRsKenyQAlXswSnLakA='",
   "img-src 'self' data:",
   "font-src 'self'",
   // The engine talks only to these origins; /api/kev is a same-origin proxy.
